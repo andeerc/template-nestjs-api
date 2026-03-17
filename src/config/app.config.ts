@@ -1,4 +1,4 @@
-import { WsIoAdapter } from '@/infrastructure/ws-adapter/ws-adapter';
+import { WsIoAdapter } from '@/shared/infrastructure/websocket/ws-adapter';
 import fastifyCookie from '@fastify/cookie';
 import fastifyHelmet from '@fastify/helmet';
 import fastifySession from '@fastify/session';
@@ -12,7 +12,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
 import compression from 'compression';
 import { ZodValidationPipe } from 'nestjs-zod';
-import { ResponseInterceptor } from '../application/http/common/interceptors/response.interceptor';
+import { ResponseInterceptor } from '@/shared/http/interceptors/response.interceptor';
 import { envConfig } from './env.config';
 import { createSessionConfig } from './session.config';
 

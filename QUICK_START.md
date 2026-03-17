@@ -3,7 +3,7 @@
 ## 📋 O que foi implementado
 
 ✅ Migração de `class-validator` para `nestjs-zod`
-✅ Módulo de autenticação completo com Clean Architecture
+✅ Módulos organizados em arquitetura feature-first
 ✅ Padrão Use Cases aplicado
 ✅ Exemplo de login com validação Zod
 ✅ Migração de banco para TypeORM
@@ -14,30 +14,28 @@
 
 ```
 src/
-├── domain/auth/
-│   ├── entities/user.entity.ts
-│   ├── repositories/user.repository.interface.ts
-│   ├── use-cases/login.use-case.ts
-│   └── auth-domain.module.ts
+├── modules/auth/
+│   ├── application/use-cases/login.use-case.ts
+│   ├── presentation/http/controllers/auth.controller.ts
+│   ├── presentation/http/dtos/login.dto.ts
+│   ├── presentation/http/dtos/auth-response.dto.ts
+│   └── auth.module.ts
 │
-├── infrastructure/auth/
-│   ├── repositories/user.repository.ts
-│   └── auth-infrastructure.module.ts
-│
-├── application/http/users/
-│   ├── controllers/users.controller.ts
-│   ├── resources/users.resource.ts
+├── modules/users/
+│   ├── application/services/user-crud.service.ts
+│   ├── domain/entities/user.entity.ts
+│   ├── domain/repositories/user.repository.interface.ts
+│   ├── infrastructure/persistence/repositories/user.repository.ts
+│   ├── infrastructure/persistence/users-persistence.module.ts
+│   ├── presentation/http/controllers/users.controller.ts
+│   ├── presentation/http/resources/users.resource.ts
+│   ├── presentation/http/dtos/user-response.dto.ts
 │   └── users.module.ts
 │
-├── application/users/
-│   └── services/user-crud.service.ts
-│
-└── application/http/auth/
-    ├── dtos/
-    │   ├── login.dto.ts (com Zod)
-    │   └── auth-response.dto.ts (com Zod)
-    ├── controllers/auth.controller.ts
-    └── auth.module.ts
+└── shared/
+    ├── http/
+    ├── infrastructure/
+    └── session-storage/
 ```
 
 ## ⚡ Como Testar

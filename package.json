@@ -1,7 +1,7 @@
 {
   "name": "nestjs-api-scaffold",
   "version": "1.0.0",
-  "description": "NestJS API Scaffold with Fastify, PostgreSQL, Redis, and Clean Architecture",
+  "description": "NestJS API Scaffold with Fastify, PostgreSQL, Redis, and feature-first modules",
   "author": "",
   "private": true,
   "license": "UNLICENSED",
@@ -21,10 +21,10 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typeorm": "node --require ts-node/register --require tsconfig-paths/register ./node_modules/typeorm/cli.js",
-    "migrate:make": "npm run typeorm -- migration:generate ./src/infrastructure/database/migrations/%npm_config_name% -d ./src/infrastructure/database/typeorm.datasource.ts",
-    "migrate:latest": "npm run typeorm -- migration:run -d ./src/infrastructure/database/typeorm.datasource.ts",
-    "migrate:rollback": "npm run typeorm -- migration:revert -d ./src/infrastructure/database/typeorm.datasource.ts",
-    "migrate:status": "npm run typeorm -- migration:show -d ./src/infrastructure/database/typeorm.datasource.ts"
+    "migrate:make": "npm run typeorm -- migration:generate ./src/shared/infrastructure/database/migrations/%npm_config_name% -d ./src/shared/infrastructure/database/typeorm.datasource.ts",
+    "migrate:latest": "npm run typeorm -- migration:run -d ./src/shared/infrastructure/database/typeorm.datasource.ts",
+    "migrate:rollback": "npm run typeorm -- migration:revert -d ./src/shared/infrastructure/database/typeorm.datasource.ts",
+    "migrate:status": "npm run typeorm -- migration:show -d ./src/shared/infrastructure/database/typeorm.datasource.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",

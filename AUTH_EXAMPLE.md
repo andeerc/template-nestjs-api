@@ -1,6 +1,6 @@
 # Exemplo de Autenticação com NestJS + Zod
 
-Este exemplo demonstra a implementação de um sistema de autenticação usando **nestjs-zod** para validação e seguindo o padrão **Use Cases** com Clean Architecture.
+Este exemplo demonstra a implementação de um sistema de autenticação usando **nestjs-zod** para validação em uma arquitetura **feature-first**.
 
 ## 📦 Tecnologias Usadas
 
@@ -14,35 +14,23 @@ Este exemplo demonstra a implementação de um sistema de autenticação usando 
 
 ## 🏗️ Arquitetura
 
-O projeto segue **Clean Architecture** com três camadas principais:
+O projeto segue uma organização **feature-first**, com separação entre `application`, `domain`, `infrastructure` e `presentation/http` apenas quando a feature realmente precisa disso:
 
 ```
 src/
-├── domain/                      # Regras de negócio
-│   └── auth/
-│       ├── entities/           # Entidades do domínio
-│       │   └── user.entity.ts
-│       ├── repositories/       # Interfaces dos repositórios
-│       │   └── user.repository.interface.ts
-│       ├── use-cases/          # Casos de uso (business logic)
-│       │   └── login.use-case.ts
-│       └── auth-domain.module.ts
+├── modules/
+│   ├── auth/
+│   │   ├── application/use-cases/login.use-case.ts
+│   │   ├── presentation/http/controllers/auth.controller.ts
+│   │   └── presentation/http/dtos/
+│   └── users/
+│       ├── domain/entities/user.entity.ts
+│       ├── domain/repositories/user.repository.interface.ts
+│       └── infrastructure/persistence/repositories/user.repository.ts
 │
-├── infrastructure/              # Implementações técnicas
-│   └── auth/
-│       ├── repositories/       # Implementação dos repositórios
-│       │   └── user.repository.ts
-│       └── auth-infrastructure.module.ts
-│
-└── application/                 # Camada de apresentação
-    └── http/
-        └── auth/
-            ├── dtos/           # DTOs com Zod schemas
-            │   ├── login.dto.ts
-            │   └── auth-response.dto.ts
-            ├── controllers/    # Controllers HTTP
-            │   └── auth.controller.ts
-            └── auth.module.ts
+└── shared/
+    ├── http/
+    └── infrastructure/
 ```
 
 ## 🔐 Fluxo de Autenticação
@@ -50,7 +38,7 @@ src/
 ### 1. **Request HTTP** → Controller
 
 ```typescript
-// application/http/auth/controllers/auth.controller.ts
+// modules/auth/presentation/http/controllers/auth.controller.ts
 @Post('login')
 async login(@Body() loginDto: LoginDto): Promise<AuthResponseDto> {
   // Validação automática via nestjs-zod
@@ -62,7 +50,7 @@ async login(@Body() loginDto: LoginDto): Promise<AuthResponseDto> {
 ### 2. **Controller** → Use Case (Business Logic)
 
 ```typescript
-// domain/auth/use-cases/login.use-case.ts
+// modules/auth/application/use-cases/login.use-case.ts
 @Injectable()
 export class LoginUseCase {
   constructor(
@@ -86,7 +74,7 @@ export class LoginUseCase {
 ### 3. **Use Case** → Repository (Data Access)
 
 ```typescript
-// infrastructure/auth/repositories/user.repository.ts
+// modules/users/infrastructure/persistence/repositories/user.repository.ts
 @Injectable()
 export class UserRepository implements IUserRepository {
   async findByEmail(email: string): Promise<User | null> {
@@ -100,7 +88,7 @@ export class UserRepository implements IUserRepository {
 ### Definindo Schemas
 
 ```typescript
-// application/http/auth/dtos/login.dto.ts
+// modules/auth/presentation/http/dtos/login.dto.ts
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 

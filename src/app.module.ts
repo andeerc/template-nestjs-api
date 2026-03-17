@@ -1,16 +1,32 @@
 import { Module } from '@nestjs/common';
-import { ApplicationModule } from './application/application.module';
-import { DomainModule } from './domain/domain.module';
-import { InfrastructureModule } from './infrastructure/infrastructure.module';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { AuthModule } from '@/modules/auth/auth.module';
+import { UsersModule } from '@/modules/users/users.module';
+import { AuthGuard } from '@/shared/http/guards/auth.guard';
+import { HttpCacheInterceptor, SessionStorageInterceptor } from '@/shared/http/interceptors';
+import { SharedInfrastructureModule } from '@/shared/infrastructure/shared-infrastructure.module';
 
 @Module({
   imports: [
-    InfrastructureModule,
-    DomainModule,
-    ApplicationModule,
+    SharedInfrastructureModule,
+    AuthModule,
+    UsersModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SessionStorageInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: HttpCacheInterceptor,
+    },
+  ],
   exports: [],
 })
 export class AppModule {}

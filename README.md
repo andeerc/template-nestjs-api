@@ -15,20 +15,23 @@ Template base para criação de APIs RESTful com NestJS, Fastify, PostgreSQL e R
 
 ```
 src/
-├── application/        # Orquestração da aplicação e adapters de entrada
-│   ├── http/
-│   │   └── common/     # Utilitários compartilhados
-│   └── users/          # Serviços de aplicação do recurso users
-├── domain/             # Lógica de negócio (services, repositories, entities)
-│   └── common/         # Serviços compartilhados (SessionStorage)
-├── infrastructure/     # Infraestrutura (database, cache, i18n, queue)
-│   ├── cache/          # Redis cache service
-│   ├── database/       # TypeORM + migrations
-│   ├── i18n/           # Internacionalização
-│   ├── queue/          # Bull queue
-│   └── ws-adapter/     # Socket.io com Redis adapter
+├── modules/
+│   ├── auth/
+│   │   ├── application/
+│   │   └── presentation/http/
+│   └── users/
+│       ├── application/
+│       ├── domain/
+│       ├── infrastructure/persistence/
+│       └── presentation/http/
+├── shared/
+│   ├── http/           # Decorators, guards, helpers e interceptors globais
+│   ├── infrastructure/ # Database, cache, i18n, queue e websocket
+│   └── session-storage/
 └── config/             # Configurações da aplicação
 ```
+
+O template segue um modelo `feature-first`: cada módulo cresce em slices próprias e só cria `domain/` quando existe regra de negócio real. `users` concentra o agregado e sua persistência; `auth` depende desse contrato para o fluxo de login.
 
 ## Setup
 
