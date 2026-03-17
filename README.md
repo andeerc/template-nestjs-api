@@ -5,29 +5,33 @@ Template base para criação de APIs RESTful com NestJS, Fastify, PostgreSQL e R
 ## Stack
 
 - **Framework**: NestJS + Fastify
-- **Database**: PostgreSQL + Knex.js (query builder)
+- **Database**: PostgreSQL + TypeORM + NICOT
 - **Cache/Sessions**: Redis
 - **Queue**: Bull
-- **Validation**: class-validator + i18n
+- **Validation**: nestjs-zod + DTOs entity-driven do NICOT
 - **Documentation**: Swagger + Scalar UI
 
 ## Arquitetura
 
 ```
 src/
-├── application/        # Camada HTTP (controllers, decorators, guards, interceptors)
-│   └── http/
-│       └── common/     # Utilitários compartilhados
-├── domain/             # Lógica de negócio (services, repositories, entities)
-│   └── common/         # Serviços compartilhados (SessionStorage)
-├── infrastructure/     # Infraestrutura (database, cache, i18n, queue)
-│   ├── cache/          # Redis cache service
-│   ├── database/       # Knex.js + migrations
-│   ├── i18n/           # Internacionalização
-│   ├── queue/          # Bull queue
-│   └── ws-adapter/     # Socket.io com Redis adapter
+├── modules/
+│   ├── auth/
+│   │   ├── application/
+│   │   └── presentation/http/
+│   └── users/
+│       ├── application/
+│       ├── domain/
+│       ├── infrastructure/persistence/
+│       └── presentation/http/
+├── shared/
+│   ├── http/           # Decorators, guards, helpers e interceptors globais
+│   ├── infrastructure/ # Database, cache, i18n, queue e websocket
+│   └── session-storage/
 └── config/             # Configurações da aplicação
 ```
+
+O template segue um modelo `feature-first`: cada módulo cresce em slices próprias e só cria `domain/` quando existe regra de negócio real. `users` concentra o agregado e sua persistência; `auth` depende desse contrato para o fluxo de login.
 
 ## Setup
 
@@ -46,7 +50,7 @@ cp .env.example .env
 ### 3. Inicie os serviços (PostgreSQL + Redis)
 
 ```bash
-npm run dependencies
+npm run dev:dependencies
 # ou
 docker-compose up -d
 ```
@@ -80,14 +84,10 @@ npm test                    # Todos os testes
 npm run test:watch          # Watch mode
 npm run test:e2e            # Testes e2e
 
-# Migrations (Knex.js)
+# Migrations (TypeORM)
 npm run migrate:make nome   # Criar migration
 npm run migrate:latest      # Executar migrations
 npm run migrate:rollback    # Reverter última migration
-
-# Seeds
-npm run seed:make nome      # Criar seed
-npm run seed:run            # Executar seeds
 ```
 
 ## Documentação
@@ -112,16 +112,20 @@ export class CreateUserDto {
 
 ### Repositories
 ```typescript
-export class UserRepository extends BaseRepository {
-  async findById(id: number): Promise<User | null> {
-    return this.db.from<User>('users').where({ id }).first();
+@Injectable()
+export class UserRepository implements IUserRepository {
+  constructor(
+    @InjectRepository(User)
+    private readonly repo: Repository<User>,
+  ) {}
+
+  async findById(id: string): Promise<User | null> {
+    return this.repo.findOne({ where: { id } });
   }
 
-  async createWithTransaction(data: Partial<User>): Promise<User> {
-    return this.runInTransaction(async () => {
-      const [user] = await this.db.from<User>('users').insert(data).returning('*');
-      return user;
-    });
+  async create(data: Omit<User, 'id' | 'createdAt' | 'updatedAt'>) {
+    const entity = this.repo.create(data);
+    return this.repo.save(entity);
   }
 }
 ```
@@ -132,18 +136,26 @@ export class UserRepository extends BaseRepository {
 export class UserController {
   @Get(':id')
   @ApiDoc({ summary: 'Get user by ID', response: UserResponseDto })
-  async findOne(@Param('id') id: number) {
-    const user = await this.userService.findById(id);
-    return ResponseHelper.success(user);
+  async findOne(@UsersResource.idParam() id: string) {
+    const result = await this.userService.findOne(id);
+    return ResponseHelper.success(result.data, result.message);
   }
 
   @Post()
-  @Public() // Rota pública
-  async create(@Body() dto: CreateUserDto) {
-    // ...
+  @UseInterceptors(TransactionalTypeOrmInterceptor())
+  async create(@UsersResource.createParam() dto: CreateUserDto) {
+    const result = await this.userService.create(dto);
+    return ResponseHelper.success(result.data, result.message);
   }
 }
 ```
+
+### NICOT + transação request-scoped
+
+- `TransactionalTypeOrmModule.forFeature([User])` fornece o repositório transacional do NICOT.
+- `@InjectTransactionalRepository(User)` deve ser usado nos serviços CRUD gerados pelo NICOT.
+- `@UseInterceptors(TransactionalTypeOrmInterceptor())` deve ficar apenas nos endpoints de escrita.
+- `auth/login` continua customizado e usa `InjectRepository(User)` normalmente, fora do contexto transacional request-scoped.
 
 ### Decorators Disponíveis
 - `@Public()` - Marca rota como pública (sem autenticação)
