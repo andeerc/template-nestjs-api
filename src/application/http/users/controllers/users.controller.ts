@@ -8,16 +8,16 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { TransactionalTypeOrmInterceptor } from 'nicot';
-import { UserResponseDto } from '../auth/dtos/auth-response.dto';
-import { ApiDoc } from '../common/decorators';
-import { ResponseHelper } from '../common/helpers/response-helper';
+import { UserCrudService } from '@/application/users/services/user-crud.service';
+import { UserResponseDto } from '../../auth/dtos/auth-response.dto';
+import { ApiDoc } from '../../common/decorators';
+import { ResponseHelper } from '../../common/helpers/response-helper';
 import {
   CreateUserDto,
   FindAllUserDto,
+  UsersResource,
   UpdateUserDto,
-  UserFactory,
-} from './users.factory';
-import { UserCrudService } from './users.service';
+} from '../resources/users.resource';
 
 @ApiTags('Users')
 @Controller('users')
@@ -31,7 +31,7 @@ export class UsersController {
     summary: 'Create user',
     response: UserResponseDto,
   })
-  async create(@UserFactory.createParam() dto: CreateUserDto) {
+  async create(@UsersResource.createParam() dto: CreateUserDto) {
     const result = await this.userService.create(dto);
     return ResponseHelper.success(result.data, result.message);
   }
@@ -48,7 +48,7 @@ export class UsersController {
       },
     ],
   })
-  async findOne(@UserFactory.idParam() id: string) {
+  async findOne(@UsersResource.idParam() id: string) {
     const result = await this.userService.findOne(id);
     return ResponseHelper.success(result.data, result.message);
   }
@@ -66,7 +66,7 @@ export class UsersController {
       { name: 'recordsPerPage', description: 'Page size', example: 25 },
     ],
   })
-  async findAll(@UserFactory.findAllParam() dto: FindAllUserDto) {
+  async findAll(@UsersResource.findAllParam() dto: FindAllUserDto) {
     const result = await this.userService.findAll(dto);
     return ResponseHelper.paginated(
       result.data,
@@ -91,8 +91,8 @@ export class UsersController {
     ],
   })
   async update(
-    @UserFactory.idParam() id: string,
-    @UserFactory.updateParam() dto: UpdateUserDto,
+    @UsersResource.idParam() id: string,
+    @UsersResource.updateParam() dto: UpdateUserDto,
   ) {
     const result = await this.userService.update(id, dto);
     return ResponseHelper.success(null, result.message);
@@ -110,7 +110,7 @@ export class UsersController {
       },
     ],
   })
-  async delete(@UserFactory.idParam() id: string) {
+  async delete(@UsersResource.idParam() id: string) {
     const result = await this.userService.delete(id);
     return ResponseHelper.success(null, result.message);
   }

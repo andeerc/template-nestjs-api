@@ -25,10 +25,12 @@ src/
 │   └── auth-infrastructure.module.ts
 │
 ├── application/http/users/
-│   ├── users.controller.ts
-│   ├── users.factory.ts
-│   ├── users.module.ts
-│   └── users.service.ts
+│   ├── controllers/users.controller.ts
+│   ├── resources/users.resource.ts
+│   └── users.module.ts
+│
+├── application/users/
+│   └── services/user-crud.service.ts
 │
 └── application/http/auth/
     ├── dtos/
@@ -42,7 +44,7 @@ src/
 
 ### 1. Rodar banco de dados
 ```bash
-npm run dependencies
+npm run dev:dependencies
 ```
 
 ### 2. Rodar migration

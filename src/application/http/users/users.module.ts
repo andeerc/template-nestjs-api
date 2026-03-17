@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
+import { UserCrudService } from '@/application/users/services/user-crud.service';
 import { User } from '@/domain/auth/entities/user.entity';
 import { TransactionalTypeOrmModule } from 'nicot';
-import { UsersController } from './users.controller';
-import { UserCrudService } from './users.service';
+import { UsersController } from './controllers/users.controller';
 
 @Module({
   imports: [TransactionalTypeOrmModule.forFeature([User])],

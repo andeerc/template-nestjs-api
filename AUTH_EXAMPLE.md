@@ -9,7 +9,7 @@ Este exemplo demonstra a implementação de um sistema de autenticação usando 
 - **nestjs-zod**: Integração do Zod com NestJS
 - **Fastify**: HTTP server de alta performance
 - **PostgreSQL**: Banco de dados
-- **Knex**: Query builder para SQL
+- **TypeORM + NICOT**: ORM, migrations e CRUD entity-driven
 - **bcrypt**: Hash de senhas
 
 ## 🏗️ Arquitetura
@@ -90,7 +90,7 @@ export class LoginUseCase {
 @Injectable()
 export class UserRepository implements IUserRepository {
   async findByEmail(email: string): Promise<User | null> {
-    return await this.db('users').where({ email }).first();
+    return this.repo.findOne({ where: { email } });
   }
 }
 ```

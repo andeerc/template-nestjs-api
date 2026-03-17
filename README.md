@@ -15,9 +15,10 @@ Template base para criação de APIs RESTful com NestJS, Fastify, PostgreSQL e R
 
 ```
 src/
-├── application/        # Camada HTTP (controllers, decorators, guards, interceptors)
-│   └── http/
-│       └── common/     # Utilitários compartilhados
+├── application/        # Orquestração da aplicação e adapters de entrada
+│   ├── http/
+│   │   └── common/     # Utilitários compartilhados
+│   └── users/          # Serviços de aplicação do recurso users
 ├── domain/             # Lógica de negócio (services, repositories, entities)
 │   └── common/         # Serviços compartilhados (SessionStorage)
 ├── infrastructure/     # Infraestrutura (database, cache, i18n, queue)
@@ -132,14 +133,14 @@ export class UserRepository implements IUserRepository {
 export class UserController {
   @Get(':id')
   @ApiDoc({ summary: 'Get user by ID', response: UserResponseDto })
-  async findOne(@UserFactory.idParam() id: string) {
+  async findOne(@UsersResource.idParam() id: string) {
     const result = await this.userService.findOne(id);
     return ResponseHelper.success(result.data, result.message);
   }
 
   @Post()
   @UseInterceptors(TransactionalTypeOrmInterceptor())
-  async create(@UserFactory.createParam() dto: CreateUserDto) {
+  async create(@UsersResource.createParam() dto: CreateUserDto) {
     const result = await this.userService.create(dto);
     return ResponseHelper.success(result.data, result.message);
   }
