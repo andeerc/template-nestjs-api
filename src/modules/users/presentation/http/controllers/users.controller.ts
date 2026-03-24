@@ -8,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { UserCrudService } from '@/modules/users/application/services/user-crud.service';
-import { UserResponseDto } from '@/modules/users/presentation/http/dtos/user-response.dto';
 import { ApiDoc } from '@/shared/http/decorators';
 import { ResponseHelper } from '@/shared/http/helpers/response-helper';
 import { TransactionalTypeOrmInterceptor } from 'nicot';
@@ -29,7 +28,6 @@ export class UsersController {
   @ApiBody({ type: CreateUserDto })
   @ApiDoc({
     summary: 'Create user',
-    response: UserResponseDto,
   })
   async create(@UsersResource.createParam() dto: CreateUserDto) {
     const result = await this.userService.create(dto);
@@ -39,7 +37,6 @@ export class UsersController {
   @Get(':id')
   @ApiDoc({
     summary: 'Get user by ID',
-    response: UserResponseDto,
     params: [
       {
         name: 'id',
@@ -56,7 +53,6 @@ export class UsersController {
   @Get()
   @ApiDoc({
     summary: 'List users',
-    response: UserResponseDto,
     isPaginated: true,
     query: [
       { name: 'id', description: 'Filter by user ID' },

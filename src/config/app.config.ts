@@ -15,6 +15,7 @@ import { ZodValidationPipe } from 'nestjs-zod';
 import { ResponseInterceptor } from '@/shared/http/interceptors/response.interceptor';
 import { envConfig } from './env.config';
 import { createSessionConfig } from './session.config';
+import { enrichSwaggerResponsesFromSource } from './swagger-response-inference';
 
 export class AppConfig {
   static async setup(app: INestApplication & NestFastifyApplication) {
@@ -150,13 +151,15 @@ export class AppConfig {
       .setVersion('1.0')
       .build();
 
-    const documentFactory = SwaggerModule.createDocument(app, config);
+    const document = enrichSwaggerResponsesFromSource(
+      SwaggerModule.createDocument(app, config),
+    );
 
     // Scalar UI
     app.use(
       '/docs',
       apiReference({
-        content: documentFactory,
+        content: document,
         showDeveloperTools: 'never',
         theme: 'bluePlanet',
         darkMode: true,
@@ -167,7 +170,7 @@ export class AppConfig {
     );
 
     // Swagger endpoints
-    SwaggerModule.setup('swagger', app, documentFactory, {
+    SwaggerModule.setup('swagger', app, document, {
       jsonDocumentUrl: '/swagger/json',
       yamlDocumentUrl: '/swagger/yaml',
       swaggerUiEnabled: false,

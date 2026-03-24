@@ -135,7 +135,7 @@ export class UserRepository implements IUserRepository {
 @Controller('users')
 export class UserController {
   @Get(':id')
-  @ApiDoc({ summary: 'Get user by ID', response: UserResponseDto })
+  @ApiDoc({ summary: 'Get user by ID' })
   async findOne(@UsersResource.idParam() id: string) {
     const result = await this.userService.findOne(id);
     return ResponseHelper.success(result.data, result.message);
@@ -160,7 +160,7 @@ export class UserController {
 ### Decorators Disponíveis
 - `@Public()` - Marca rota como pública (sem autenticação)
 - `@CurrentUser()` - Obtém usuário da sessão
-- `@ApiDoc()` - Documentação Swagger simplificada
+- `@ApiDoc()` - Documentação automática para Scalar/Swagger com inferência do retorno do controller
 - `@CacheKey()` / `@CacheTTL()` - Cache de resposta
 
 ## Estrutura de Resposta
