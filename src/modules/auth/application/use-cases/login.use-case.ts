@@ -1,6 +1,7 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { User } from '@/modules/users/domain/entities/user.entity';
+import { toPublicUser } from '@/modules/users/domain/entities/user.entity';
+import type { PublicUser } from '@/modules/users/domain/entities/user.entity';
 import type { IUserRepository } from '@/modules/users/domain/repositories/user.repository.interface';
 import { USER_REPOSITORY } from '@/modules/users/domain/repositories/user.repository.interface';
 
@@ -10,7 +11,7 @@ export interface LoginInput {
 }
 
 export interface LoginOutput {
-  user: User;
+  user: PublicUser;
   token?: string;
 }
 
@@ -59,11 +60,8 @@ export class LoginUseCase {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
-
     return {
-      user: userWithoutPassword as User,
+      user: toPublicUser(user),
       // In a real application, you would generate a JWT token here
       // token: await this.jwtService.sign({ sub: user.id, email: user.email }),
     };

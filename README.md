@@ -9,10 +9,10 @@ Este README foi ajustado para refletir o estado real do projeto hoje. A base já
 ### O que já existe
 
 - Bootstrap com `NestJS + Fastify`
-- PostgreSQL com `TypeORM`
+- PostgreSQL com `Knex`
 - Redis conectado para `session`, `cache`, `Bull` e adapter de `socket.io`
 - Módulo `auth` com `POST /auth/login`
-- Módulo `users` com CRUD via `NICOT`
+- Módulo `users` com CRUD via `use-cases + Knex`
 - Swagger JSON/YAML e interface Scalar em `/docs`
 - Inferência automática de envelopes de resposta para a documentação
 
@@ -21,9 +21,7 @@ Este README foi ajustado para refletir o estado real do projeto hoje. A base já
 - O login valida email e senha, mas **não grava a sessão** e **não emite JWT**
 - O `AuthGuard` exige `request.session.authenticated` e `request.session.userId` para rotas protegidas
 - Na prática, o CRUD de `users` está protegido, mas a própria API ainda não oferece um fluxo completo para autenticar e então consumir essas rotas
-- A estratégia de validação está **mista**:
-  - `auth/login` e alguns DTOs de resposta usam `Zod`
-  - o CRUD entity-driven de `users` depende de decorators no entity e ainda usa `class-validator`
+- A validação HTTP está padronizada com `Zod`
 - SMTP é validado no boot via ambiente, embora ainda não exista uma feature pública de email na base
 - `cache`, `queue` e `websocket` estão ligados na infraestrutura, mas não há exemplos de rota com cache, processor do Bull ou gateway socket implementados
 - Existe script `test:e2e`, mas não há pasta `test/` no repositório neste momento
@@ -36,13 +34,12 @@ Arquivos como `QUICK_START.md`, `AUTH_EXAMPLE.md` e `ZOD_MIGRATION_GUIDE.md` des
 
 - `NestJS 11`
 - `Fastify`
-- `TypeORM`
+- `Knex`
 - `PostgreSQL`
 - `Redis`
 - `Bull`
 - `Socket.IO`
 - `nestjs-zod` + `zod`
-- `NICOT`
 - `Swagger` + `Scalar`
 
 ## Arquitetura
@@ -54,7 +51,7 @@ src/
 │   │   ├── application/use-cases/
 │   │   └── presentation/http/
 │   └── users/
-│       ├── application/services/
+│       ├── application/use-cases/
 │       ├── domain/
 │       ├── infrastructure/persistence/
 │       └── presentation/http/
@@ -74,10 +71,10 @@ src/
   - compara senha com `bcrypt`
 - `users`
   - expõe CRUD HTTP
-  - usa `RestfulFactory` e `TransactionalTypeOrmModule` do `NICOT`
-  - persiste `User` com `TypeORM`
+  - usa `Zod` + `use-cases` explícitos
+  - persiste `User` com `Knex`
 - `shared/infrastructure`
-  - centraliza banco, cache, fila, i18n e session storage
+  - centraliza banco, cache, fila e session storage
 
 ## Setup
 
@@ -121,7 +118,7 @@ npm run migrate:latest
 
 Hoje existe uma migration inicial:
 
-- `20260206193945_create_users_table.ts`
+- `20260206193945_create_users_table.mjs`
 
 Ela cria apenas a tabela `users`.
 
@@ -217,6 +214,11 @@ O projeto possui um decorator customizado para reduzir boilerplate no Swagger e 
 ## Comandos Úteis
 
 ```bash
+# Criar novo módulo
+npm run new:module -- orders
+npm run new:module -- product-categories --entity product-category
+npm run new:module -- reports --dry-run
+
 # desenvolvimento
 npm run dev
 npm run start:dev
@@ -239,6 +241,26 @@ npm run migrate:rollback
 npm run migrate:status
 ```
 
+### Gerar um novo módulo
+
+O projeto agora inclui um gerador para criar a estrutura padrão completa de um módulo CRUD em `src/modules`, incluindo:
+
+- `application/use-cases`
+- `domain/entities`
+- `domain/repositories`
+- `infrastructure/persistence`
+- `presentation/http/controllers`
+- `presentation/http/dtos`
+
+Por padrão, o script também registra o novo módulo em `src/app.module.ts`.
+
+Flags úteis:
+
+- `--entity <name>` para informar o nome singular da entidade
+- `--no-register` para gerar os arquivos sem alterar os arquivos compartilhados
+- `--force` para sobrescrever um módulo existente
+- `--dry-run` para visualizar o que será criado antes de escrever
+
 ## Testes
 
 O repositório contém hoje um teste unitário em:
@@ -254,14 +276,12 @@ Ele cobre a inferência de schemas para a documentação. Não há suíte e2e ve
 - Sem endpoint de registro/bootstrap público
 - Sem seed inicial de usuário
 - Sem exemplos reais de fila, cache aplicado em endpoint ou websocket gateway
-- Migração para Zod ainda não é total
 - Variáveis de SMTP são obrigatórias mesmo sem fluxo de email exposto
-- O script `migrate:make` usa `%npm_config_name%`, então pode exigir ajuste para funcionar bem em shells Unix/WSL
 
 ## Próximos Passos Recomendados
 
 1. Concluir a autenticação de fato: sessão ou JWT, mas de forma consistente
 2. Criar um fluxo inicial de bootstrap de usuário ou seed
-3. Decidir se a validação da base será totalmente `Zod` ou continuará híbrida com `NICOT`
+3. Expandir o padrão `Zod + use-cases + Knex` para os próximos módulos
 4. Tornar email opcional no boot ou implementar a feature que justifique as variáveis obrigatórias
 5. Adicionar testes e2e reais para `auth` e `users`

@@ -1,13 +1,13 @@
-# 🚀 Quick Start - Auth + Users com NICOT
+# 🚀 Quick Start - Auth + Users com Zod + Knex
 
 ## 📋 O que foi implementado
 
-✅ Migração de `class-validator` para `nestjs-zod`
+✅ Validação HTTP com `nestjs-zod`
 ✅ Módulos organizados em arquitetura feature-first
 ✅ Padrão Use Cases aplicado
 ✅ Exemplo de login com validação Zod
-✅ Migração de banco para TypeORM
-✅ CRUD de `users` com NICOT
+✅ Banco com `Knex`
+✅ CRUD de `users` com `use-cases + Knex`
 ✅ Documentação completa
 
 ## 🎯 Estrutura Criada
@@ -22,13 +22,14 @@ src/
 │   └── auth.module.ts
 │
 ├── modules/users/
-│   ├── application/services/user-crud.service.ts
+│   ├── application/use-cases/
 │   ├── domain/entities/user.entity.ts
 │   ├── domain/repositories/user.repository.interface.ts
 │   ├── infrastructure/persistence/repositories/user.repository.ts
 │   ├── infrastructure/persistence/users-persistence.module.ts
 │   ├── presentation/http/controllers/users.controller.ts
-│   ├── presentation/http/resources/users.resource.ts
+│   ├── presentation/http/dtos/create-user.dto.ts
+│   ├── presentation/http/dtos/find-all-users.dto.ts
 │   ├── presentation/http/dtos/user-response.dto.ts
 │   └── users.module.ts
 │
@@ -141,8 +142,7 @@ curl -X POST http://localhost:3000/auth/login \
 
 ## 📚 Documentação
 
-- **AUTH_EXAMPLE.md**: Documentação completa com exemplos
-- **ZOD_MIGRATION_GUIDE.md**: Guia de migração do class-validator
+- **README.md**: Referência principal do estado atual do projeto
 - **Swagger**: http://localhost:3000/docs
 
 ## 🎨 Criando Novos Endpoints
@@ -188,19 +188,7 @@ async register(@Body() dto: RegisterDto) {
 
 ## 🔑 Principais Mudanças
 
-### Antes (class-validator):
-```typescript
-export class LoginDto {
-  @IsEmail()
-  @IsNotEmpty()
-  email: string;
-
-  @MinLength(6)
-  password: string;
-}
-```
-
-### Agora (nestjs-zod):
+### DTOs explícitos com Zod:
 ```typescript
 const LoginSchema = z.object({
   email: z.string().email().transform(val => val.toLowerCase()),
@@ -213,7 +201,7 @@ export class LoginDto extends createZodDto(LoginSchema) {}
 ## 🎯 Benefícios
 
 ✅ **Type Safety**: Inferência automática de tipos
-✅ **Performance**: ~40% mais rápido
+✅ **Consistência**: Mesmo padrão de validação para todos os endpoints
 ✅ **DX**: Menos boilerplate
 ✅ **Transformações**: Built-in no schema
 ✅ **Composição**: Schemas reutilizáveis
