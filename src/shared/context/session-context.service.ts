@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from 'async_hooks';
-import type { AppSessionContext } from '@/shared/context/app-session-context';
+import { AppSessionContext } from './app-session-context';
 
-export class SessionStorageService {
+export class SessionContextService {
   private readonly _storage = new AsyncLocalStorage<AppSessionContext>();
 
   get storage(): AsyncLocalStorage<AppSessionContext> {

@@ -24,6 +24,10 @@ export class HttpCacheInterceptor implements NestInterceptor {
     context: ExecutionContext,
     next: CallHandler,
   ): Promise<Observable<any>> {
+    if (context.getType<'http' | 'ws' | 'rpc'>() !== 'http') {
+      return next.handle();
+    }
+
     const cacheKey = this.reflector.get<string>(
       CACHE_KEY_METADATA,
       context.getHandler(),

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { EmailsModule } from '@/modules/emails/emails.module';
 import { CreateUserUseCase } from './application/use-cases/create-user.use-case';
 import { DeleteUserUseCase } from './application/use-cases/delete-user.use-case';
 import { FindUserUseCase } from './application/use-cases/find-user.use-case';
@@ -8,7 +9,7 @@ import { UsersPersistenceModule } from './infrastructure/persistence/users-persi
 import { UsersController } from './presentation/http/controllers/users.controller';
 
 @Module({
-  imports: [UsersPersistenceModule],
+  imports: [UsersPersistenceModule, EmailsModule],
   controllers: [UsersController],
   providers: [
     CreateUserUseCase,

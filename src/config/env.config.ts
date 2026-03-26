@@ -29,6 +29,10 @@ export const envConfig = {
     maxAge: parseInt(process.env.SESSION_MAX_AGE || '604800', 10),
   },
 
+  websocket: {
+    path: process.env.WEBSOCKET_PATH || '/socket.io',
+  },
+
   email: {
     smtp: {
       host: process.env.SMTP_HOST || 'smtp.mailtrap.io',

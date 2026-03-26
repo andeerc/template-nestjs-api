@@ -1,16 +1,22 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthModule } from '@/modules/auth/auth.module';
+import { EmailsModule } from '@/modules/emails/emails.module';
 import { UsersModule } from '@/modules/users/users.module';
+import { WsModule } from '@/modules/ws/ws.module';
 import { AuthGuard } from '@/shared/http/guards/auth.guard';
 import { HttpCacheInterceptor, SessionStorageInterceptor } from '@/shared/http/interceptors';
 import { SharedInfrastructureModule } from '@/shared/infrastructure/shared-infrastructure.module';
+import { SessionContextModule } from './shared/context/session-context.module';
 
 @Module({
   imports: [
     SharedInfrastructureModule,
+    SessionContextModule,
     AuthModule,
+    EmailsModule,
     UsersModule,
+    WsModule,
   ],
   controllers: [],
   providers: [

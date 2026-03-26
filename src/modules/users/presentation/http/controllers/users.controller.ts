@@ -19,6 +19,7 @@ import { ResponseHelper } from '@/shared/http/helpers/response-helper';
 import {
   CreateUserDto,
   FindAllUsersDto,
+  toUserResponseDto,
   UpdateUserDto,
   UserIdParamDto,
   UserResponseDto,
@@ -44,7 +45,7 @@ export class UsersController {
   })
   async create(@Body() dto: CreateUserDto) {
     const result = await this.createUserUseCase.execute(dto);
-    return ResponseHelper.success(result.data, result.message);
+    return ResponseHelper.success(toUserResponseDto(result.data), result.message);
   }
 
   @Get(':id')
@@ -62,7 +63,7 @@ export class UsersController {
   })
   async findOne(@Param() params: UserIdParamDto) {
     const result = await this.findUserUseCase.execute(params.id);
-    return ResponseHelper.success(result.data, result.message);
+    return ResponseHelper.success(toUserResponseDto(result.data), result.message);
   }
 
   @Get()
@@ -82,7 +83,7 @@ export class UsersController {
   async findAll(@Query() dto: FindAllUsersDto) {
     const result = await this.listUsersUseCase.execute(dto);
     return ResponseHelper.paginated(
-      result.data,
+      result.data.map(toUserResponseDto),
       result.pageCount,
       result.recordsPerPage,
       result.total,
@@ -109,7 +110,7 @@ export class UsersController {
     @Body() dto: UpdateUserDto,
   ) {
     const result = await this.updateUserUseCase.execute(params.id, dto);
-    return ResponseHelper.success(result.data, result.message);
+    return ResponseHelper.success(toUserResponseDto(result.data), result.message);
   }
 
   @Delete(':id')

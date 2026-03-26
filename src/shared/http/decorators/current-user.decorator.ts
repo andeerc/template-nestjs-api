@@ -1,14 +1,12 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import {
+  getCurrentUserFromSession,
+  getSessionFromContext,
+} from '@/shared/context/execution-context-session.util';
 
 export const CurrentUser = createParamDecorator(
   (data: string | undefined, ctx: ExecutionContext) => {
-    const request = ctx.switchToHttp().getRequest();
-    const user = request.session?.userId
-      ? {
-          id: request.session.userId,
-          email: request.session.email,
-        }
-      : null;
+    const user = getCurrentUserFromSession(getSessionFromContext(ctx));
 
     return data ? user?.[data] : user;
   },

@@ -21,6 +21,10 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
     context: ExecutionContext,
     next: CallHandler,
   ): Observable<Response<T>> {
+    if (context.getType<'http' | 'ws' | 'rpc'>() !== 'http') {
+      return next.handle() as Observable<Response<T>>;
+    }
+
     return next.handle().pipe(
       map((data) => {
         if (this.isStandardFormat(data)) {

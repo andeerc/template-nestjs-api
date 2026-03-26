@@ -4,6 +4,10 @@ import * as ConnectRedis from 'connect-redis';
 import { createClient } from 'redis';
 import { envConfig } from './env.config';
 
+export const SESSION_COOKIE_NAME = 'sessionId';
+export const SESSION_STORE_PREFIX = 'session:';
+export const SESSION_TTL_SECONDS = 86400 * 7;
+
 export async function createSessionConfig(): Promise<FastifySessionOptions> {
   const redisClient = createClient({
     socket: {
@@ -20,12 +24,13 @@ export async function createSessionConfig(): Promise<FastifySessionOptions> {
   const RedisStore = ConnectRedis.RedisStore;
   const store = new (RedisStore as any)({
     client: redisClient,
-    prefix: 'session:',
-    ttl: 86400 * 7, // 7 dias em segundos
+    prefix: SESSION_STORE_PREFIX,
+    ttl: SESSION_TTL_SECONDS,
   });
 
   return {
     store,
+    cookieName: SESSION_COOKIE_NAME,
     secret: process.env.SESSION_SECRET || 'change-this-secret-in-production',
     cookie: {
       secure: envConfig.isProduction,

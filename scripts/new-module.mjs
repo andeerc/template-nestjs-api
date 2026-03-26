@@ -724,11 +724,13 @@ function createResponseDtoTemplate(ctx) {
   return `import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
+const DateTimeStringSchema = z.string().datetime();
+
 export const ${ctx.entityClass}ResponseSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
-  createdAt: z.date().or(z.string()),
-  updatedAt: z.date().or(z.string()),
+  createdAt: DateTimeStringSchema,
+  updatedAt: DateTimeStringSchema,
 });
 
 export class ${ctx.responseDtoClass} extends createZodDto(${ctx.entityClass}ResponseSchema) {}

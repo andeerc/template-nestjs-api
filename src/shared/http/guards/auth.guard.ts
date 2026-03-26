@@ -5,6 +5,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { WsException } from '@nestjs/websockets';
+import { getSessionFromContext } from '@/shared/context/execution-context-session.util';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 @Injectable()
@@ -21,10 +23,13 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest();
-    const session = request.session;
+    const session = getSessionFromContext(context);
 
     if (!session?.authenticated || !session?.userId) {
+      if (context.getType<'http' | 'ws'>() === 'ws') {
+        throw new WsException('User not authenticated');
+      }
+
       throw new UnauthorizedException('User not authenticated');
     }
 

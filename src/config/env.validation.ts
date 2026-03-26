@@ -31,6 +31,7 @@ export const envValidationSchema = Joi.object({
     'string.empty': 'SESSION_SECRET cannot be empty',
   }),
   SESSION_MAX_AGE: Joi.number().default(604800),
+  WEBSOCKET_PATH: Joi.string().default('/socket.io'),
 
   // Email / SMTP
   SMTP_HOST: Joi.string().required().messages({
