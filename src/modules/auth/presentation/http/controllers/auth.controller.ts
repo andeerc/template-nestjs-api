@@ -1,7 +1,7 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { LoginUseCase } from '@/modules/auth/application/use-cases/login.use-case';
-import { Public } from '@/shared/http/decorators';
+import { ApiDoc, Public } from '@/shared/http/decorators';
 import { AuthResponseDto, LoginDto } from '../dtos';
 
 /**
@@ -12,7 +12,7 @@ import { AuthResponseDto, LoginDto } from '../dtos';
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly loginUseCase: LoginUseCase) {}
+  constructor(private readonly loginUseCase: LoginUseCase) { }
 
   /**
    * Login endpoint
@@ -33,22 +33,17 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({
+  @ApiDoc({
     summary: 'User login',
     description: 'Authenticate user with email and password. Returns user data without sensitive information.',
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Login successful',
-    type: AuthResponseDto,
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid credentials',
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Validation error',
+    response: AuthResponseDto,
+    commonResponses: [
+      'badRequest',
+      {
+        type: 'unauthorized',
+        description: 'Invalid credentials',
+      },
+    ],
   })
   async login(@Body() loginDto: LoginDto): Promise<AuthResponseDto> {
     const result = await this.loginUseCase.execute({

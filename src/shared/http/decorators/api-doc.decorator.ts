@@ -1,4 +1,6 @@
 import { applyDecorators, Type } from '@nestjs/common';
+import { resolveCommonApiResponses } from '@/config/swagger-responses.config';
+import type { CommonApiResponseOption } from '@/config/swagger-responses.config';
 import {
   ApiExtraModels,
   ApiOperation,
@@ -14,6 +16,7 @@ export interface ApiDocOptions {
   description?: string;
   response?: Type<unknown>;
   isPaginated?: boolean;
+  commonResponses?: CommonApiResponseOption[];
   params?: Array<{ name: string; description?: string; example?: unknown }>;
   query?: Array<{
     name: string;
@@ -55,6 +58,10 @@ export function ApiDoc(options: ApiDocOptions) {
       );
     });
   }
+
+  resolveCommonApiResponses(options.commonResponses).forEach((response) => {
+    decorators.push(ApiResponse(response));
+  });
 
   const successDescription = 'Operação realizada com sucesso';
 

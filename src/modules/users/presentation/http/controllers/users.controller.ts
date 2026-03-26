@@ -28,6 +28,7 @@ export class UsersController {
   @ApiBody({ type: CreateUserDto })
   @ApiDoc({
     summary: 'Create user',
+    commonResponses: ['badRequest', 'unauthorized'],
   })
   async create(@UsersResource.createParam() dto: CreateUserDto) {
     const result = await this.userService.create(dto);
@@ -37,6 +38,7 @@ export class UsersController {
   @Get(':id')
   @ApiDoc({
     summary: 'Get user by ID',
+    commonResponses: ['badRequest', 'unauthorized'],
     params: [
       {
         name: 'id',
@@ -54,6 +56,7 @@ export class UsersController {
   @ApiDoc({
     summary: 'List users',
     isPaginated: true,
+    commonResponses: ['badRequest', 'unauthorized'],
     query: [
       { name: 'id', description: 'Filter by user ID' },
       { name: 'email', description: 'Filter by email' },
@@ -78,6 +81,7 @@ export class UsersController {
   @ApiBody({ type: UpdateUserDto })
   @ApiDoc({
     summary: 'Update user',
+    commonResponses: ['badRequest', 'unauthorized'],
     params: [
       {
         name: 'id',
@@ -98,6 +102,7 @@ export class UsersController {
   @UseInterceptors(TransactionalTypeOrmInterceptor())
   @ApiDoc({
     summary: 'Delete user',
+    commonResponses: ['badRequest', 'unauthorized'],
     params: [
       {
         name: 'id',
