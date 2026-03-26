@@ -9,17 +9,17 @@ import {
 } from '@nestjs/swagger';
 import { ApiResponseDto, PaginationMetaDto } from '../helpers/response-helper';
 
-interface ApiDocOptions {
+export interface ApiDocOptions {
   summary: string;
   description?: string;
-  response?: Type<any>;
+  response?: Type<unknown>;
   isPaginated?: boolean;
-  params?: Array<{ name: string; description?: string; example?: any }>;
+  params?: Array<{ name: string; description?: string; example?: unknown }>;
   query?: Array<{
     name: string;
     description?: string;
     required?: boolean;
-    example?: any;
+    example?: unknown;
   }>;
 }
 
@@ -56,13 +56,15 @@ export function ApiDoc(options: ApiDocOptions) {
     });
   }
 
+  const successDescription = 'Operação realizada com sucesso';
+
   if (options.response) {
     if (options.isPaginated) {
       decorators.push(
         ApiExtraModels(ApiResponseDto, PaginationMetaDto, options.response),
         ApiResponse({
           status: 200,
-          description: 'Success',
+          description: successDescription,
           schema: {
             allOf: [
               {
@@ -89,7 +91,7 @@ export function ApiDoc(options: ApiDocOptions) {
         ApiExtraModels(ApiResponseDto, options.response),
         ApiResponse({
           status: 200,
-          description: 'Success',
+          description: successDescription,
           schema: {
             allOf: [
               {
@@ -116,7 +118,7 @@ export function ApiDoc(options: ApiDocOptions) {
     decorators.push(
       ApiResponse({
         status: 200,
-        description: 'Success',
+        description: successDescription,
         schema: {
           properties: {
             success: { type: 'boolean', example: true },
