@@ -13,3 +13,10 @@ export interface WelcomeEmailInput {
   email: string;
   name: string;
 }
+
+export interface PasswordResetEmailInput {
+  email: string;
+  name: string;
+  resetUrl: string;
+  expiresInMinutes: number;
+}
