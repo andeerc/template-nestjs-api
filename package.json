@@ -23,7 +23,11 @@
     "migrate:make": "node ./scripts/database/make-migration.mjs",
     "migrate:latest": "node ./scripts/database/migrate-latest.mjs",
     "migrate:rollback": "node ./scripts/database/migrate-rollback.mjs",
-    "migrate:status": "node ./scripts/database/migrate-status.mjs"
+    "migrate:status": "node ./scripts/database/migrate-status.mjs",
+    "seed:make": "node ./scripts/database/make-seed.mjs",
+    "seed:run": "node ./scripts/database/seed-run.mjs",
+    "seed:rollback": "node ./scripts/database/seed-rollback.mjs",
+    "seed:status": "node ./scripts/database/seed-status.mjs"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",

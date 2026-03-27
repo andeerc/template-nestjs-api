@@ -11,6 +11,11 @@ export const migrationsDirectory = path.resolve(
   '../../src/shared/infrastructure/database/migrations',
 );
 
+export const seedsDirectory = path.resolve(
+  currentDirectory,
+  '../../src/shared/infrastructure/database/seeds',
+);
+
 export function createKnexConfig() {
   const isProduction = process.env.NODE_ENV === 'production';
 
@@ -35,6 +40,12 @@ export function createKnexConfig() {
       extension: 'mjs',
       loadExtensions: ['.mjs'],
       tableName: 'knex_migrations',
+    },
+    seeds: {
+      directory: seedsDirectory,
+      extension: 'mjs',
+      loadExtensions: ['.mjs'],
+      sortDirsSeparately: false,
     },
   };
 }

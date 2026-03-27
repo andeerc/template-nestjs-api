@@ -60,7 +60,6 @@ export class AuthController {
 
     return {
       user: toUserResponseDto(result.user),
-      token: result.token,
       message: 'Login successful',
     };
   }

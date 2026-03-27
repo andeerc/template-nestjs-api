@@ -25,6 +25,9 @@ export class UserRepository implements IUserRepository {
 
   async findAll(filters: FindAllUsersFilters): Promise<FindAllUsersResult> {
     const query = UserModel.query();
+    const shouldPaginate = filters.paginate ?? true;
+    const pageCount = filters.pageCount ?? 1;
+    const recordsPerPage = filters.recordsPerPage ?? 25;
 
     if (filters.id) {
       query.where('id', filters.id);
@@ -40,12 +43,18 @@ export class UserRepository implements IUserRepository {
 
     const total = await query.clone().resultSize();
 
-    const users = await query
+    const usersQuery = query
       .clone()
       .select('*')
-      .orderBy('createdAt', 'desc')
-      .offset((filters.pageCount - 1) * filters.recordsPerPage)
-      .limit(filters.recordsPerPage);
+      .orderBy('createdAt', 'desc');
+
+    if (shouldPaginate) {
+      usersQuery
+        .offset((pageCount - 1) * recordsPerPage)
+        .limit(recordsPerPage);
+    }
+
+    const users = await usersQuery;
 
     return {
       data: users.map(user => user.toDomain()),

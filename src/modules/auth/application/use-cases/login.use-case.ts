@@ -10,7 +10,6 @@ export interface LoginInput {
 
 export interface LoginOutput {
   user: PublicUser;
-  token?: string;
 }
 
 @Injectable()

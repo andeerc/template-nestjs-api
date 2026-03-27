@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthModule } from '@/modules/auth/auth.module';
 import { EmailsModule } from '@/modules/emails/emails.module';
+import { ReportsModule } from '@/modules/reports/reports.module';
 import { UsersModule } from '@/modules/users/users.module';
 import { WsModule } from '@/modules/ws/ws.module';
 import { AuthGuard } from '@/shared/http/guards/auth.guard';
@@ -15,6 +16,7 @@ import { SessionContextModule } from './shared/context/session-context.module';
     SessionContextModule,
     AuthModule,
     EmailsModule,
+    ReportsModule,
     UsersModule,
     WsModule,
   ],
@@ -35,4 +37,4 @@ import { SessionContextModule } from './shared/context/session-context.module';
   ],
   exports: [],
 })
-export class AppModule {}
+export class AppModule { }

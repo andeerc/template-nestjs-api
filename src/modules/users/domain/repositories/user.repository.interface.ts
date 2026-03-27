@@ -16,8 +16,9 @@ export interface FindAllUsersFilters {
   id?: string;
   email?: string;
   name?: string;
-  pageCount: number;
-  recordsPerPage: number;
+  pageCount?: number;
+  recordsPerPage?: number;
+  paginate?: boolean;
 }
 
 export interface FindAllUsersResult {

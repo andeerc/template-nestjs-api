@@ -53,23 +53,32 @@ npm run migrate:latest
 
 ### 3. Popular com dados de teste
 ```bash
-npm run migrate:latest
+npm run seed:run
 ```
 
 ### 4. Iniciar servidor
 ```bash
-npm run dev
+npm run start:dev
 ```
 
 ### 5. Testar endpoint de login
+
+Credenciais iniciais da seed:
+
+```bash
+email: admin@cspeixes.local
+password: admin123456
+```
+
+Troque esses valores no `.env` antes de usar em ambiente compartilhado.
 
 **Request:**
 ```bash
 curl -X POST http://localhost:3000/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "user@example.com",
-    "password": "password123"
+    "email": "admin@cspeixes.local",
+    "password": "admin123456"
   }'
 ```
 
@@ -80,8 +89,8 @@ curl -X POST http://localhost:3000/auth/login \
   "data": {
     "user": {
       "id": "uuid-aqui",
-      "email": "user@example.com",
-      "name": "Test User",
+      "email": "admin@cspeixes.local",
+      "name": "Administrador",
       "createdAt": "2024-01-01T00:00:00.000Z",
       "updatedAt": "2024-01-01T00:00:00.000Z"
     },
@@ -232,6 +241,12 @@ npm run dev:dependencies
 ```bash
 npm run migrate:rollback
 npm run migrate:latest
+```
+
+### Seed não roda
+```bash
+npm run seed:status
+npm run seed:run
 ```
 
 ## 💡 Dicas

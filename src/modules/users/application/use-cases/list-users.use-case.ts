@@ -1,12 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { toPublicUser } from '@/modules/users/domain/entities/user.entity';
-import type {
-  FindAllUsersFilters,
-  IUserRepository,
-} from '@/modules/users/domain/repositories/user.repository.interface';
+import type { IUserRepository } from '@/modules/users/domain/repositories/user.repository.interface';
 import { USER_REPOSITORY } from '@/modules/users/domain/repositories/user.repository.interface';
 
-export interface ListUsersInput extends FindAllUsersFilters {}
+export interface ListUsersInput {
+  id?: string;
+  email?: string;
+  name?: string;
+  pageCount: number;
+  recordsPerPage: number;
+}
 
 @Injectable()
 export class ListUsersUseCase {

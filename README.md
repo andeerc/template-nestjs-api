@@ -124,7 +124,25 @@ Hoje existe uma migration inicial:
 
 Ela cria apenas a tabela `users`.
 
-### 5. Inicie a aplicação
+### 5. Rode as seeds
+
+```bash
+npm run seed:run
+```
+
+Hoje existe uma seed inicial:
+
+- `20260327120000_seed_bootstrap_admin_user.mjs`
+
+Ela cria ou atualiza um usuário admin de bootstrap com base nas variáveis:
+
+- `SEED_ADMIN_EMAIL`
+- `SEED_ADMIN_NAME`
+- `SEED_ADMIN_PASSWORD`
+
+Troque esses valores antes de rodar as seeds em ambientes compartilhados.
+
+### 6. Inicie a aplicação
 
 ```bash
 npm run start:dev
@@ -133,6 +151,7 @@ npm run start:dev
 Observação sobre scripts:
 
 - `npm run start:dev` executa migrations e inicia watch mode, assumindo dependências já disponíveis
+- seeds continuam manuais via `npm run seed:run`
 
 ## Endpoints Disponíveis
 
@@ -239,6 +258,12 @@ npm run test:e2e
 npm run migrate:latest
 npm run migrate:rollback
 npm run migrate:status
+
+# seeds
+npm run seed:run
+npm run seed:rollback
+npm run seed:status
+npm run seed:make -- bootstrap_admin_user
 ```
 
 ### Gerar um novo módulo
@@ -274,14 +299,13 @@ Ele cobre a inferência de schemas para a documentação. Não há suíte e2e ve
 - Sem JWT implementado
 - Sem persistência de login na sessão
 - Sem endpoint de registro/bootstrap público
-- Sem seed inicial de usuário
 - Sem exemplos reais de fila, cache aplicado em endpoint ou websocket gateway
 - Variáveis de SMTP são obrigatórias mesmo sem fluxo de email exposto
 
 ## Próximos Passos Recomendados
 
 1. Concluir a autenticação de fato: sessão ou JWT, mas de forma consistente
-2. Criar um fluxo inicial de bootstrap de usuário ou seed
+2. Endurecer a estratégia de bootstrap do admin seed para ambientes compartilhados
 3. Expandir o padrão `Zod + use-cases + Knex` para os próximos módulos
 4. Tornar email opcional no boot ou implementar a feature que justifique as variáveis obrigatórias
 5. Adicionar testes e2e reais para `auth` e `users`
