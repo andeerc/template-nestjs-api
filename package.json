@@ -6,6 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "bootstrap": "node ./scripts/bootstrap.mjs",
     "new:module": "node ./scripts/new-module.mjs",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",

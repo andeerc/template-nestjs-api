@@ -135,8 +135,8 @@ export class AppConfig {
   private static setupSwagger(app: INestApplication & NestFastifyApplication) {
     const config = new DocumentBuilder()
       .addServer(`${envConfig.apiUrl}`, 'Server')
-      .setTitle('API')
-      .setDescription('# API Documentation')
+      .setTitle(envConfig.app.name)
+      .setDescription(envConfig.app.description)
       .setVersion('1.0')
       .build();
 
@@ -154,7 +154,7 @@ export class AppConfig {
         darkMode: true,
         withFastify: true,
         layout: 'modern',
-        pageTitle: 'API Documentation',
+        pageTitle: `${envConfig.app.name} Docs`,
       }),
     );
 

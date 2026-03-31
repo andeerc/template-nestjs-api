@@ -1,7 +1,7 @@
 import { applyDecorators, Type } from '@nestjs/common';
-import { resolveCommonApiResponses } from '@/config/swagger-responses.config';
-import type { CommonApiResponseOption } from '@/config/swagger-responses.config';
+import { CommonApiResponseOption, resolveCommonApiResponses } from '@/config/swagger-responses.config';
 import {
+  ApiBody,
   ApiExtraModels,
   ApiOperation,
   ApiParam,
@@ -24,6 +24,7 @@ export interface ApiDocOptions {
     required?: boolean;
     example?: unknown;
   }>;
+  body?: Type<unknown>;
 }
 
 export function ApiDoc(options: ApiDocOptions) {
@@ -57,6 +58,10 @@ export function ApiDoc(options: ApiDocOptions) {
         }),
       );
     });
+  }
+
+  if (options.body) {
+    decorators.push(ApiBody({ type: options.body }));
   }
 
   resolveCommonApiResponses(options.commonResponses).forEach((response) => {

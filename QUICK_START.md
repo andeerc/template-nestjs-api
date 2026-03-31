@@ -41,6 +41,13 @@ src/
 
 ## ⚡ Como Testar
 
+### 0. Personalizar o template
+```bash
+npm run bootstrap
+```
+
+O bootstrap atualiza o nome do projeto e os metadados básicos usados no app e na documentação.
+
 ### 1. Rodar banco de dados
 ```bash
 npm run dev:dependencies

@@ -11,8 +11,7 @@ import {
   parsePermissionCode,
   type PermissionCode,
 } from '@/modules/permissions/application/constants/permissions.constants';
-import { PERMISSIONS_REPOSITORY } from '@/modules/permissions/domain/repositories/permissions.repository.interface';
-import type { IPermissionsRepository } from '@/modules/permissions/domain/repositories/permissions.repository.interface';
+import { type IPermissionsRepository, PERMISSIONS_REPOSITORY } from '@/modules/permissions/domain/repositories/permissions.repository.interface';
 import { SessionStorageService } from '@/shared/session-storage/session-storage.service';
 import type { AppAbility } from '../types/ability.types';
 import type { ResolvedPermissionsContext } from '../types/resolved-permissions-context.type';
@@ -25,7 +24,7 @@ export class PermissionsAbilityFactory {
     private readonly permissionsRepository: IPermissionsRepository,
     private readonly sessionStorageService: SessionStorageService,
     private readonly permissionsRequestContextService: PermissionsRequestContextService,
-  ) {}
+  ) { }
 
   async buildCurrent(): Promise<ResolvedPermissionsContext> {
     const session = this.sessionStorageService.getStorageData();

@@ -6,6 +6,10 @@ export const envValidationSchema = Joi.object({
     .valid('development', 'production', 'test')
     .default('development'),
   PORT: Joi.number().default(3000),
+  APP_NAME: Joi.string().default('NestJS API Scaffold'),
+  APP_DESCRIPTION: Joi.string().default(
+    'NestJS API Scaffold with Fastify, PostgreSQL, Redis, and feature-first modules',
+  ),
   HTTPS_ENABLED: Joi.boolean().default(false),
   HTTPS_KEY_PATH: Joi.string().optional().allow(''),
   HTTPS_CERT_PATH: Joi.string().optional().allow(''),

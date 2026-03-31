@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import type { FastifyRequest } from 'fastify';
 import { CreateOrganizationUseCase } from '@/modules/organizations/application/use-cases/create-organization.use-case';
 import { GetCurrentOrganizationUseCase } from '@/modules/organizations/application/use-cases/get-current-organization.use-case';
@@ -31,9 +31,9 @@ export class OrganizationsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @ApiBody({ type: CreateOrganizationDto })
   @ApiDoc({
     summary: 'Create organization',
+    body: CreateOrganizationDto,
     response: OrganizationResponseDto,
     commonResponses: ['badRequest', 'unauthorized'],
   })
@@ -107,9 +107,9 @@ export class OrganizationsController {
 
   @Post('current')
   @HttpCode(HttpStatus.OK)
-  @ApiBody({ type: SelectCurrentOrganizationDto })
   @ApiDoc({
     summary: 'Set current organization on session',
+    body: SelectCurrentOrganizationDto,
     response: OrganizationResponseDto,
     commonResponses: ['badRequest', 'unauthorized', 'notFound'],
   })

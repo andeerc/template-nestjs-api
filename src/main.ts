@@ -52,7 +52,7 @@ async function bootstrap() {
 
   await app.listen({ host: '0.0.0.0', port: envConfig.port }, async () => {
     await new Promise(resolve => setTimeout(resolve, 100));
-    Logger.log(`Server is running!`);
+    Logger.log(`${envConfig.app.name} is running!`);
     Logger.log(`API Documentation: ${envConfig.apiUrl}/docs`);
     Logger.log(
       `Swagger JSON: ${envConfig.apiUrl}/swagger/json`,

@@ -5,7 +5,7 @@ import {
   Param,
   Put,
 } from '@nestjs/common';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { GetOrganizationMemberAccessUseCase } from '@/modules/permissions/application/use-cases/get-organization-member-access.use-case';
 import { UpdateOrganizationMemberAccessUseCase } from '@/modules/permissions/application/use-cases/update-organization-member-access.use-case';
 import {
@@ -26,7 +26,7 @@ export class OrganizationMemberAccessController {
   constructor(
     private readonly getOrganizationMemberAccessUseCase: GetOrganizationMemberAccessUseCase,
     private readonly updateOrganizationMemberAccessUseCase: UpdateOrganizationMemberAccessUseCase,
-  ) {}
+  ) { }
 
   @Get(':userId/access')
   @RequireOrganizationPermissions('organization_members.manage')
@@ -56,9 +56,9 @@ export class OrganizationMemberAccessController {
 
   @Put(':userId/access')
   @RequireOrganizationPermissions('organization_members.manage')
-  @ApiBody({ type: UpdateOrganizationMemberAccessDto })
   @ApiDoc({
     summary: 'Replace organization member access',
+    body: UpdateOrganizationMemberAccessDto,
     response: PermissionSnapshotResponseDto,
     commonResponses: ['badRequest', 'unauthorized', 'conflict', 'forbidden', 'notFound'],
     params: [

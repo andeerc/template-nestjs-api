@@ -37,6 +37,12 @@ export const envConfig = {
   nodeEnv: process.env.NODE_ENV || 'development',
   isDevelopment: process.env.NODE_ENV !== 'production',
   isProduction: process.env.NODE_ENV === 'production',
+  app: {
+    name: process.env.APP_NAME || 'NestJS API Scaffold',
+    description:
+      process.env.APP_DESCRIPTION ||
+      'NestJS API Scaffold with Fastify, PostgreSQL, Redis, and feature-first modules',
+  },
 
   redis: {
     host: process.env.REDIS_HOST || 'localhost',

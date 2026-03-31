@@ -41,9 +41,9 @@ export class UsersController {
   ) { }
 
   @Post()
-  @ApiBody({ type: CreateUserDto })
   @ApiDoc({
     summary: 'Create user',
+    body: CreateUserDto,
     response: UserResponseDto,
     commonResponses: ['badRequest', 'unauthorized'],
   })
@@ -112,7 +112,6 @@ export class UsersController {
   }
 
   @Patch(':id')
-  @ApiBody({ type: UpdateUserDto })
   @ApiDoc({
     summary: 'Update user',
     response: UserResponseDto,
@@ -124,6 +123,7 @@ export class UsersController {
         example: '1925012345678901248',
       },
     ],
+    body: UpdateUserDto,
   })
   async update(
     @Param() params: UserIdParamDto,

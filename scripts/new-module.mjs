@@ -760,7 +760,7 @@ function createControllerTemplate(ctx) {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { ${ctx.createUseCaseClass} } from '@/modules/${ctx.moduleName}/application/use-cases/create-${ctx.entityName}.use-case';
 import { ${ctx.deleteUseCaseClass} } from '@/modules/${ctx.moduleName}/application/use-cases/delete-${ctx.entityName}.use-case';
 import { ${ctx.findUseCaseClass} } from '@/modules/${ctx.moduleName}/application/use-cases/find-${ctx.entityName}.use-case';
@@ -788,9 +788,9 @@ export class ${ctx.moduleClass}Controller {
   ) {}
 
   @Post()
-  @ApiBody({ type: ${ctx.createDtoClass} })
   @ApiDoc({
     summary: 'Create ${ctx.entitySentenceName}',
+    body: ${ctx.createDtoClass},
     response: ${ctx.responseDtoClass},
     commonResponses: ['badRequest', 'unauthorized'],
   })
@@ -842,9 +842,9 @@ export class ${ctx.moduleClass}Controller {
   }
 
   @Patch(':id')
-  @ApiBody({ type: ${ctx.updateDtoClass} })
   @ApiDoc({
     summary: 'Update ${ctx.entitySentenceName}',
+    body: ${ctx.updateDtoClass},
     response: ${ctx.responseDtoClass},
     commonResponses: ['badRequest', 'unauthorized'],
     params: [

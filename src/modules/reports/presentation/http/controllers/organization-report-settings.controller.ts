@@ -44,7 +44,7 @@ export class OrganizationReportSettingsController {
     private readonly updateCurrentOrganizationReportSettingsUseCase: UpdateCurrentOrganizationReportSettingsUseCase,
     private readonly uploadCurrentOrganizationReportLogoUseCase: UploadCurrentOrganizationReportLogoUseCase,
     private readonly deleteCurrentOrganizationReportLogoUseCase: DeleteCurrentOrganizationReportLogoUseCase,
-  ) {}
+  ) { }
 
   @Get()
   @RequireOrganizationPermissions('report_settings.read')
@@ -74,9 +74,9 @@ export class OrganizationReportSettingsController {
 
   @Patch()
   @RequireOrganizationPermissions('report_settings.update')
-  @ApiBody({ type: UpdateOrganizationReportSettingsDto })
   @ApiDoc({
     summary: 'Update report settings for the current organization',
+    body: UpdateOrganizationReportSettingsDto,
     response: OrganizationReportSettingsResponseDto,
     commonResponses: ['badRequest', 'unauthorized', 'conflict', 'forbidden'],
   })

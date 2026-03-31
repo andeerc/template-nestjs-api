@@ -80,6 +80,14 @@ src/
 
 ## Setup
 
+### 0. Personalize o template
+
+```bash
+npm run bootstrap
+```
+
+O script de bootstrap pergunta o nome do projeto, o nome do pacote npm e a descrição da aplicação. Depois ele atualiza `package.json`, `package-lock.json` quando existir, `README.md`, `QUICK_START.md` e as variáveis `APP_NAME` / `APP_DESCRIPTION` em `.env` e `.env.example`.
+
 ### 1. Instale dependências
 
 ```bash
