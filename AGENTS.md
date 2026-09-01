@@ -61,8 +61,7 @@ src/
 - **Schemas:** `pgTable` + `varchar(24)` snowflake PKs, `timestamp` etc, `pgSchema("auth")` for `auth.user/session/account/verification` (better-auth). Public tables: `users`, `organizations`, `organization_memberships`, `permissions`, `roles`, `organization_report_settings`, etc.
 - **Migrations:** `0000_equal_sunspot.sql` (DDL 11 tables incl. password_reset_tokens historically) + `0001_enable_rls.sql` (ENABLE+FORCE RLS 5 tables + 5 policies `current_setting(app.current_organization_id, true)='' OR ...`) + `0002_careless_king_cobra.sql` (CREATE SCHEMA auth + 4 better-auth tables) + `0003_worthless_stature.sql` (DROP TABLE password_reset_tokens CASCADE). Meta in `migrations/meta/{_journal.json,*.snapshot.json}`.
 - **RLS:** `DatabaseService.withRlsContext({userId,organizationId,role}, tx=> set_config x4 in transaction)`; repos distinguish privileged `db` vs RLS `tx`. `TenantMiddleware` reads `x-tenant-id`/`x-organization-id`. `SessionStorageInterceptor` merges `session`+`tenant` into `AsyncLocalStorage`.
-- **Seeds:** `seeds/{index.ts,run-seed.ts,seed-bootstrap-admin.ts,seed-permissions-catalog.ts}` (replaces old `.mjs`). Backups in `migrations/_objx_backup/` + `seeds/_objx_backup/` are **gitignored** reference only — do not commit `_objx_backup` or `node_modules/dist`.
-- **Scripts:** `migrate:make`→`drizzle-kit generate`, `migrate:latest`→`migrate`, `migrate:status`→`check`+`__drizzle_migrations` query, `db:*` wrappers around `drizzle-kit`.
+- **Seeds:** `seeds/{index.ts,run-seed.ts,seed-bootstrap-admin.ts,seed-permissions-catalog.ts}`.
 
 ## Auth — Better Auth
 
@@ -74,12 +73,12 @@ src/
 
 ## Code generation
 
-- `pnpm new:module -- <kebab-plural> [--entity <singular>] [--dry-run]` → drizzle-based repo (`DRIZZLE` + `eq/and/count` + `pgTable`) and `pgTable` model (`id varchar 24`, `name text`, timestamps). Old Objx `defineModel` templates removed.
+- `pnpm new:module -- <kebab-plural> [--entity <singular>] [--dry-run]` → drizzle-based repo (`DRIZZLE` + `eq/and/count` + `pgTable`) and `pgTable` model (`id varchar 24`, `name text`, timestamps).
 
 ## Conventions for agents
 
-- Always `pnpm`, never `npm`/`yarn`. Use `corepack`. Do not reintroduce `package-lock.json`/`eslint`/`prettier`/`@qbobjx/*` (deleted). `pnpm-lock.yaml` v9 `autoInstallPeers true`.
+- Always `pnpm`, never `npm`/`yarn`. Use `corepack`. Do not reintroduce `package-lock.json`/`eslint`/`prettier`. `pnpm-lock.yaml` v9 `autoInstallPeers true`.
 - Run `pnpm install && pnpm biome check . --diagnostic-level=error && pnpm build && pnpm vitest run` before push; `pnpm drizzle-kit check` should be clean.
-- Do not edit `migrations/*.sql` or `meta/*.json` manually — use `drizzle-kit generate`. Keep `_objx_backup` gitignored.
+- Do not edit `migrations/*.sql` or `meta/*.json` manually — use `drizzle-kit generate`.
 - Keep `better-auth` lane separate from `public` RLS lane — `users` sync via hook only.
 - Prefer `DRIZZLE` + `withRlsContext` in repos; avoid raw `pg` outside `DatabaseService`.
