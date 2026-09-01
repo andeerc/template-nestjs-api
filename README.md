@@ -9,10 +9,10 @@ Este README foi ajustado para refletir o estado real do projeto hoje. A base já
 ### O que já existe
 
 - Bootstrap com `NestJS + Fastify`
-- PostgreSQL com `Objx + pg`
+- PostgreSQL com `Drizzle ORM + pg` e `better-auth`
 - Redis conectado para `session`, `cache`, `Bull` e adapter de `socket.io`
 - Módulo `auth` com `POST /auth/login` e `POST /auth/google`
-- Módulo `users` com CRUD via `use-cases + Objx`
+- Módulo `users` com CRUD via `use-cases + Drizzle`
 - Swagger JSON/YAML e interface Scalar em `/docs`
 - Inferência automática de envelopes de resposta para a documentação
 - Bootstrap interativo para nome, infra prefixada, Google Auth, SMTP e seed inicial
@@ -35,7 +35,7 @@ Arquivos como `QUICK_START.md`, `AUTH_EXAMPLE.md` e `ZOD_MIGRATION_GUIDE.md` des
 
 - `NestJS 11`
 - `Fastify`
-- `Objx`
+- `Drizzle ORM` + `drizzle-kit`
 - `pg`
 - `PostgreSQL`
 - `Redis`
@@ -74,8 +74,8 @@ src/
 - `users`
   - expõe CRUD HTTP
   - usa `Zod` + `use-cases` explícitos
-  - persiste `User` com `Objx`
-  - usa modelos `defineModel(...)` com plugin de `snake_case`
+  - persiste `User` com `Drizzle` (`pgTable` + `drizzle-orm`)
+  - usa `drizzle-orm/pg-core` com RLS via `DatabaseService.withRlsContext`
 - `shared/infrastructure`
   - centraliza banco, cache, fila e session storage
 
@@ -84,15 +84,14 @@ src/
 ### 0. Personalize o template
 
 ```bash
-npm run bootstrap
+pnpm bootstrap
 ```
 
-O script de bootstrap pergunta o nome do projeto, o nome do pacote npm e a descrição da aplicação. Também permite habilitar Google Auth, ligar/desligar envio de email, prefixar a infraestrutura pelo nome do projeto e configurar o admin/organização iniciais. Depois ele atualiza `package.json`, `package-lock.json` quando existir, `README.md`, `QUICK_START.md` e as variáveis relevantes em `.env` e `.env.example`.
-
+O script de bootstrap pergunta o nome do projeto, o nome do pacote npm e a descrição da aplicação. Também permite habilitar Google Auth, ligar/desligar envio de email, prefixar a infraestrutura pelo nome do projeto e configurar o admin/organização iniciais. Depois ele atualiza `package.json`, `pnpm-lock.yaml` quando existir, `README.md`, `QUICK_START.md` e as variáveis relevantes em `.env` e `.env.example`.
 ### 1. Instale dependências
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### 2. Configure ambiente
@@ -103,21 +102,24 @@ cp .env.example .env
 
 O arquivo `.env.example` já contém os valores locais esperados para PostgreSQL e Redis. O bootstrap também prepara as principais flags de autenticação, email e seed:
 
-- `APP_SLUG`
-- `SESSION_SECRET`
-- `EMAIL_ENABLED`
-- `SMTP_HOST`
-- `SMTP_USER`
-- `SMTP_PASS`
-- `APP_URL`
-- `API_URL`
-- `GOOGLE_AUTH_ENABLED`
-- `GOOGLE_CLIENT_ID`
+ - `APP_SLUG`
+ - `SESSION_SECRET` (legado, substituído por `BETTER_AUTH_SECRET` mas mantido como shim)
+ - `BETTER_AUTH_SECRET` (min 32 chars, obrigatório)
+ - `BETTER_AUTH_URL` (URL base do Better Auth, ex: `http://localhost:3000`)
+ - `EMAIL_ENABLED`
+ - `SMTP_HOST`
+ - `SMTP_USER`
+ - `SMTP_PASS`
+ - `APP_URL`
+ - `API_URL`
+ - `GOOGLE_AUTH_ENABLED`
+ - `GOOGLE_CLIENT_ID`
+ - `GOOGLE_CLIENT_SECRET`
 
 ### 3. Suba PostgreSQL e Redis
 
 ```bash
-npm run dev:dependencies
+pnpm dev:dependencies
 ```
 
 ou
@@ -129,15 +131,15 @@ docker-compose up -d
 ### 4. Rode as migrations
 
 ```bash
-npm run migrate:latest
+pnpm db:migrate
 ```
 
-Hoje a base já traz migrations para `users`, `auth`, `organizations`, `permissions` e `reports`, executadas pelos wrappers de migration do Objx em `scripts/database/*`.
+Hoje a base já traz migrations para `users`, `auth`, `organizations`, `permissions` e `reports`, executadas via `drizzle-kit` e SQL em `src/shared/infrastructure/database/migrations/*` (`0000_equal_sunspot.sql` + `0001_enable_rls.sql`).
 
 ### 5. Rode as seeds
 
 ```bash
-npm run seed:run
+pnpm seed:run
 ```
 
 Hoje a base já traz seeds para bootstrap do admin e catálogo inicial de permissões.
@@ -154,13 +156,13 @@ Troque esses valores antes de rodar as seeds em ambientes compartilhados.
 ### 6. Inicie a aplicação
 
 ```bash
-npm run start:dev
+pnpm start:dev
 ```
 
 Observação sobre scripts:
 
-- `npm run start:dev` executa migrations e inicia watch mode, assumindo dependências já disponíveis
-- seeds continuam manuais via `npm run seed:run`
+- `pnpm start:dev` executa `pnpm db:migrate` e inicia watch mode, assumindo dependências já disponíveis
+- seeds continuam manuais via `pnpm seed:run`
 
 ## Endpoints Disponíveis
 
@@ -252,42 +254,44 @@ O projeto possui um decorator customizado para reduzir boilerplate no Swagger e 
 
 ### Sessions e contexto por request
 
-- sessão Fastify persistida no Redis
-- `AsyncLocalStorage` para compartilhar a sessão ao longo do request
+- Better Auth (`auth` schema: `user`, `session`, `account`, `verification` via `drizzleAdapter`) — `BETTER_AUTH_SECRET` + `BETTER_AUTH_URL` + `GOOGLE_CLIENT_ID`/`SECRET` + `CORS_ORIGIN` como `trustedOrigins`; `emailAndPassword` habilitado, handler montado em `/api/auth/*`
+- `BetterAuthGuard` (global `APP_GUARD` após `ThrottlerGuard`) valida sessão via `auth.api.getSession` e anexa `request.user`/`request.session`; `TenantMiddleware` e `PermissionsGuard` lêem contexto do Better Auth + header `x-organization-id`
+- Redis mantido para `cache`, `Bull` e `Socket.IO` (não mais para sessão)
+- `AsyncLocalStorage` para compartilhar sessão + tenant ao longo do request (RLS `SET LOCAL` via `SessionStorageInterceptor`)
+
+> Placeholders: docs de fluxo completo de `password-reset`/`email-verification` via Better Auth e exemplos de `account` linking ainda serão expandidos. O lane de DB criará as tabelas `auth.*` via migrations; o lane de auth apenas consome o `DRIZZLE` existente (não recria `Pool`).
 
 ## Comandos Úteis
 
 ```bash
 # Criar novo módulo
-npm run new:module -- orders
-npm run new:module -- product-categories --entity product-category
-npm run new:module -- reports --dry-run
+pnpm new:module -- orders
+pnpm new:module -- product-categories --entity product-category
+pnpm new:module -- reports --dry-run
 
 # desenvolvimento
-npm run start:dev
+pnpm start:dev
 
 # build
-npm run build
+pnpm build
 
 # lint
-npm run lint
+pnpm lint
 
 # testes
-npm test
-npm run test:watch
-npm run test:cov
-npm run test:e2e
+pnpm test
+pnpm test:watch
+pnpm test:cov
+pnpm test:e2e
 
-# migrations
-npm run migrate:latest
-npm run migrate:rollback
-npm run migrate:status
-
+# migrations (drizzle-kit)
+pnpm db:generate
+pnpm db:migrate
+pnpm db:check
 # seeds
-npm run seed:run
-npm run seed:rollback
-npm run seed:status
-npm run seed:make -- bootstrap_admin_user
+pnpm seed:run
+pnpm seed:status
+pnpm seed:make -- bootstrap_admin_user
 ```
 
 ### Gerar um novo módulo

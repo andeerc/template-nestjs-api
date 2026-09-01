@@ -1,6 +1,10 @@
-import type { GeneratedReportFile, ReportDocument, ReportFormat } from '../types/report.types';
+import type {
+	GeneratedReportFile,
+	ReportDocument,
+	ReportFormat,
+} from "../types/report.types";
 
 export interface IReportExporter {
-  readonly format: ReportFormat;
-  export<TRow>(document: ReportDocument<TRow>): Promise<GeneratedReportFile>;
+	readonly format: ReportFormat;
+	export<TRow>(document: ReportDocument<TRow>): Promise<GeneratedReportFile>;
 }

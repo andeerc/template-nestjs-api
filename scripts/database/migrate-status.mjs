@@ -1,31 +1,23 @@
-import {
-  listAppliedSchemaNames,
-  loadSchemaEntries,
-  migrationsDirectory,
-} from './shared-config.mjs';
+import { spawnSync } from "node:child_process";
+import { ensureDatabaseUrl, listAppliedMigrations } from "./shared-config.mjs";
 
-const historyNames = new Set(
-  await listAppliedSchemaNames('objx_migration_history'),
-);
-const schemas = await loadSchemaEntries(migrationsDirectory, 'migration');
-const completed = schemas.filter((schema) => historyNames.has(schema.name));
-const pending = schemas.filter((schema) => !historyNames.has(schema.name));
-
-console.log('Completed migrations:');
-if (completed.length === 0) {
-  console.log('- none');
-} else {
-  completed.forEach((schema) => {
-    console.log(`- ${schema.name} (${schema.fileName})`);
-  });
+ensureDatabaseUrl();
+console.log("Checking migration status via drizzle-kit check...");
+const check = spawnSync("npx", ["drizzle-kit", "check"], {
+	stdio: "inherit",
+	env: process.env,
+	shell: true,
+});
+try {
+	const rows = await listAppliedMigrations();
+	console.log(`Applied drizzle migrations: ${rows.length}`);
+	for (const r of rows) {
+		console.log(` - ${r.hash ?? r.id ?? JSON.stringify(r)}`);
+	}
+} catch (e) {
+	console.error(
+		"Could not list applied migrations (DB not reachable or no migrations table):",
+		e.message,
+	);
 }
-
-console.log('');
-console.log('Pending migrations:');
-if (pending.length === 0) {
-  console.log('- none');
-} else {
-  pending.forEach((schema) => {
-    console.log(`- ${schema.name} (${schema.fileName})`);
-  });
-}
+process.exit(check.status ?? 0);

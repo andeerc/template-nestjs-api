@@ -1,36 +1,31 @@
 # Build stage
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
+
+RUN corepack enable && corepack prepare pnpm@10 --activate
 
 WORKDIR /app
 
-# Copiar package files
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* ./
 
-# Instalar dependências
-RUN npm ci
+RUN pnpm install --frozen-lockfile
 
-# Copiar código fonte
 COPY . .
 
-# Build da aplicação
-RUN npm run build
+RUN pnpm build
 
 # Production stage
-FROM node:20-alpine
+FROM node:24-alpine AS runner
+
+RUN corepack enable && corepack prepare pnpm@10 --activate
 
 WORKDIR /app
 
-# Copiar package files
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* ./
 
-# Instalar apenas dependências de produção
-RUN npm ci --only=production
+RUN pnpm install --frozen-lockfile --prod
 
-# Copiar build do stage anterior
 COPY --from=builder /app/dist ./dist
 
-# Expor porta
 EXPOSE 3000
 
-# Comando para iniciar
 CMD ["node", "dist/main"]

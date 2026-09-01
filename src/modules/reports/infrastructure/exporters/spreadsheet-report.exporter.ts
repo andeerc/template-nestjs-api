@@ -1,75 +1,80 @@
-import { Injectable } from '@nestjs/common';
-import type { IReportExporter } from '@/modules/reports/application/contracts/report-exporter.interface';
-import type { GeneratedReportFile, ReportDocument } from '@/modules/reports/application/types/report.types';
-import { resolveColumnValue } from '@/modules/reports/application/utils/report-value.util';
+import { Injectable } from "@nestjs/common";
+import type { IReportExporter } from "@/modules/reports/application/contracts/report-exporter.interface";
+import type {
+	GeneratedReportFile,
+	ReportDocument,
+} from "@/modules/reports/application/types/report.types";
+import { resolveColumnValue } from "@/modules/reports/application/utils/report-value.util";
 
-const CSV_DELIMITER = ';';
+const CSV_DELIMITER = ";";
 
 @Injectable()
 export class SpreadsheetReportExporter implements IReportExporter {
-  readonly format = 'spreadsheet' as const;
+	readonly format = "spreadsheet" as const;
 
-  export<TRow>(document: ReportDocument<TRow>): Promise<GeneratedReportFile> {
-    const lines: string[][] = [];
+	export<TRow>(document: ReportDocument<TRow>): Promise<GeneratedReportFile> {
+		const lines: string[][] = [];
 
-    if (document.branding?.displayName) {
-      lines.push([document.branding.displayName]);
-    }
+		if (document.branding?.displayName) {
+			lines.push([document.branding.displayName]);
+		}
 
-    if (document.branding?.headerText) {
-      lines.push([document.branding.headerText]);
-    }
+		if (document.branding?.headerText) {
+			lines.push([document.branding.headerText]);
+		}
 
-    lines.push([document.title]);
+		lines.push([document.title]);
 
-    if (document.description) {
-      lines.push([document.description]);
-    }
+		if (document.description) {
+			lines.push([document.description]);
+		}
 
-    lines.push(...document.summary.map((item) => [item.label, item.value]));
-    lines.push([]);
-    lines.push(document.columns.map(column => column.header));
+		lines.push(...document.summary.map((item) => [item.label, item.value]));
+		lines.push([]);
+		lines.push(document.columns.map((column) => column.header));
 
-    if (document.rows.length === 0) {
-      lines.push(['Nenhum registro encontrado para os filtros informados.']);
-    } else {
-      document.rows.forEach((row) => {
-        lines.push(
-          document.columns.map(column => resolveColumnValue(column, row)),
-        );
-      });
-    }
+		if (document.rows.length === 0) {
+			lines.push(["Nenhum registro encontrado para os filtros informados."]);
+		} else {
+			document.rows.forEach((row) => {
+				lines.push(
+					document.columns.map((column) => resolveColumnValue(column, row)),
+				);
+			});
+		}
 
-    if (document.branding?.footerText) {
-      lines.push([]);
-      lines.push([document.branding.footerText]);
-    }
+		if (document.branding?.footerText) {
+			lines.push([]);
+			lines.push([document.branding.footerText]);
+		}
 
-    if (document.branding?.legalText) {
-      lines.push([document.branding.legalText]);
-    }
+		if (document.branding?.legalText) {
+			lines.push([document.branding.legalText]);
+		}
 
-    const csvContent = lines
-      .map(line => line.map(value => this.escapeCell(value)).join(CSV_DELIMITER))
-      .join('\r\n');
+		const csvContent = lines
+			.map((line) =>
+				line.map((value) => this.escapeCell(value)).join(CSV_DELIMITER),
+			)
+			.join("\r\n");
 
-    return Promise.resolve({
-      format: this.format,
-      fileName: `${document.fileName}.csv`,
-      contentType: 'text/csv; charset=utf-8',
-      buffer: Buffer.from(`\uFEFF${csvContent}`, 'utf8'),
-    });
-  }
+		return Promise.resolve({
+			format: this.format,
+			fileName: `${document.fileName}.csv`,
+			contentType: "text/csv; charset=utf-8",
+			buffer: Buffer.from(`\uFEFF${csvContent}`, "utf8"),
+		});
+	}
 
-  private escapeCell(value: string): string {
-    if (value.includes('"')) {
-      value = value.replace(/"/g, '""');
-    }
+	private escapeCell(value: string): string {
+		if (value.includes('"')) {
+			value = value.replace(/"/g, '""');
+		}
 
-    if (/[;"\r\n]/.test(value)) {
-      return `"${value}"`;
-    }
+		if (/[;"\r\n]/.test(value)) {
+			return `"${value}"`;
+		}
 
-    return value;
-  }
+		return value;
+	}
 }

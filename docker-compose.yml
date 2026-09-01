@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:17.6-alpine
     container_name: ${APP_SLUG:-api}-postgres
     restart: unless-stopped
     ports:
@@ -12,10 +12,11 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-api}"]
-      interval: 10s
-      timeout: 3s
-      retries: 3
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-api} -d $${POSTGRES_DB:-api}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     networks:
       - api-network
 

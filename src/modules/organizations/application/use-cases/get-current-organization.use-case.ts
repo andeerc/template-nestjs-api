@@ -1,34 +1,35 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from "@nestjs/common";
 import {
-  ORGANIZATION_REPOSITORY,
-  type IOrganizationRepository,
-} from '@/modules/organizations/domain/repositories/organization.repository.interface';
+	type IOrganizationRepository,
+	ORGANIZATION_REPOSITORY,
+} from "@/modules/organizations/domain/repositories/organization.repository.interface";
 
 @Injectable()
 export class GetCurrentOrganizationUseCase {
-  constructor(
-    @Inject(ORGANIZATION_REPOSITORY)
-    private readonly organizationRepository: IOrganizationRepository,
-  ) {}
+	constructor(
+		@Inject(ORGANIZATION_REPOSITORY)
+		private readonly organizationRepository: IOrganizationRepository,
+	) {}
 
-  async execute(userId: string, organizationId?: string) {
-    if (!organizationId) {
-      return {
-        data: null,
-        message: 'No active organization in the current session',
-      };
-    }
+	async execute(userId: string, organizationId?: string) {
+		if (!organizationId) {
+			return {
+				data: null,
+				message: "No active organization in the current session",
+			};
+		}
 
-    const organization = await this.organizationRepository.findAccessibleByIdForUser(
-      organizationId,
-      userId,
-    );
+		const organization =
+			await this.organizationRepository.findAccessibleByIdForUser(
+				organizationId,
+				userId,
+			);
 
-    return {
-      data: organization,
-      message: organization
-        ? 'Current organization retrieved successfully'
-        : 'Current organization is no longer available for this user',
-    };
-  }
+		return {
+			data: organization,
+			message: organization
+				? "Current organization retrieved successfully"
+				: "Current organization is no longer available for this user",
+		};
+	}
 }

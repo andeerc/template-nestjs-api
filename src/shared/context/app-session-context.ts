@@ -1,21 +1,21 @@
 export interface AppSessionContext {
-  userId?: string;
-  email?: string;
-  name?: string;
-  currentOrganizationId?: string;
-  currentOrganizationName?: string;
-  currentOrganizationRole?: string;
-  authenticated?: boolean;
+	userId?: string;
+	email?: string;
+	name?: string;
+	currentOrganizationId?: string;
+	currentOrganizationName?: string;
+	currentOrganizationRole?: string;
+	authenticated?: boolean;
 }
 
 export interface AppCurrentUser {
-  id: string;
-  email?: string;
-  name?: string;
+	id: string;
+	email?: string;
+	name?: string;
 }
 
 export interface AppCurrentOrganization {
-  id: string;
-  name?: string;
-  role?: string;
+	id: string;
+	name?: string;
+	role?: string;
 }

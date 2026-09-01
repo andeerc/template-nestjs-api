@@ -1,31 +1,31 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from "@nestjs/common";
 import {
-  ORGANIZATION_REPORT_SETTINGS_REPOSITORY,
-  type IOrganizationReportSettingsRepository,
-  type UploadOrganizationReportLogoInput,
-} from '@/modules/reports/domain/repositories/organization-report-settings.repository.interface';
+	type IOrganizationReportSettingsRepository,
+	ORGANIZATION_REPORT_SETTINGS_REPOSITORY,
+	type UploadOrganizationReportLogoInput,
+} from "@/modules/reports/domain/repositories/organization-report-settings.repository.interface";
 
 @Injectable()
 export class UploadCurrentOrganizationReportLogoUseCase {
-  constructor(
-    @Inject(ORGANIZATION_REPORT_SETTINGS_REPOSITORY)
-    private readonly organizationReportSettingsRepository: IOrganizationReportSettingsRepository,
-  ) {}
+	constructor(
+		@Inject(ORGANIZATION_REPORT_SETTINGS_REPOSITORY)
+		private readonly organizationReportSettingsRepository: IOrganizationReportSettingsRepository,
+	) {}
 
-  async execute(
-    organizationId: string,
-    updatedBy: string,
-    input: UploadOrganizationReportLogoInput,
-  ) {
-    const settings = await this.organizationReportSettingsRepository.upsertLogo(
-      organizationId,
-      updatedBy,
-      input,
-    );
+	async execute(
+		organizationId: string,
+		updatedBy: string,
+		input: UploadOrganizationReportLogoInput,
+	) {
+		const settings = await this.organizationReportSettingsRepository.upsertLogo(
+			organizationId,
+			updatedBy,
+			input,
+		);
 
-    return {
-      data: settings,
-      message: 'Organization report logo updated successfully',
-    };
-  }
+		return {
+			data: settings,
+			message: "Organization report logo updated successfully",
+		};
+	}
 }

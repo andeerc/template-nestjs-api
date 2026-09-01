@@ -1,9 +1,10 @@
-import { createDatabaseUrl, migrationsDirectory, runCodegenCli } from './shared-config.mjs';
+import { spawnSync } from "node:child_process";
+import { ensureDatabaseUrl } from "./shared-config.mjs";
 
-runCodegenCli([
-  'migrate',
-  '--dialect', 'postgres',
-  '--database', createDatabaseUrl(),
-  '--dir', migrationsDirectory,
-  '--direction', 'up',
-]);
+ensureDatabaseUrl();
+const result = spawnSync("npx", ["drizzle-kit", "migrate"], {
+	stdio: "inherit",
+	env: process.env,
+	shell: true,
+});
+process.exit(result.status ?? 0);

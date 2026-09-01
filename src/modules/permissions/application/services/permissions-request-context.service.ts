@@ -1,40 +1,43 @@
-import { Injectable } from '@nestjs/common';
-import { AsyncLocalStorage } from 'async_hooks';
-import type { ResolvedPermissionsContext } from '../types/resolved-permissions-context.type';
+import { Injectable } from "@nestjs/common";
+import { AsyncLocalStorage } from "async_hooks";
+import type { ResolvedPermissionsContext } from "../types/resolved-permissions-context.type";
 
 interface PermissionsRequestContextStore {
-  resolvedPermissions?: ResolvedPermissionsContext;
+	resolvedPermissions?: ResolvedPermissionsContext;
 }
 
 @Injectable()
 export class PermissionsRequestContextService {
-  private readonly storage = new AsyncLocalStorage<PermissionsRequestContextStore>();
+	private readonly storage =
+		new AsyncLocalStorage<PermissionsRequestContextStore>();
 
-  run<T>(callback: () => T): T {
-    return this.storage.run({}, callback);
-  }
+	run<T>(callback: () => T): T {
+		return this.storage.run({}, callback);
+	}
 
-  getResolvedPermissions(): ResolvedPermissionsContext | undefined {
-    return this.storage.getStore()?.resolvedPermissions;
-  }
+	getResolvedPermissions(): ResolvedPermissionsContext | undefined {
+		return this.storage.getStore()?.resolvedPermissions;
+	}
 
-  setResolvedPermissions(resolvedPermissions: ResolvedPermissionsContext): void {
-    const store = this.storage.getStore();
+	setResolvedPermissions(
+		resolvedPermissions: ResolvedPermissionsContext,
+	): void {
+		const store = this.storage.getStore();
 
-    if (!store) {
-      return;
-    }
+		if (!store) {
+			return;
+		}
 
-    store.resolvedPermissions = resolvedPermissions;
-  }
+		store.resolvedPermissions = resolvedPermissions;
+	}
 
-  clearResolvedPermissions(): void {
-    const store = this.storage.getStore();
+	clearResolvedPermissions(): void {
+		const store = this.storage.getStore();
 
-    if (!store) {
-      return;
-    }
+		if (!store) {
+			return;
+		}
 
-    store.resolvedPermissions = undefined;
-  }
+		store.resolvedPermissions = undefined;
+	}
 }

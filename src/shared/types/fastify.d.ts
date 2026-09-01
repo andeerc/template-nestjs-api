@@ -1,6 +1,6 @@
-import '@fastify/session';
-import type { AppSessionContext } from '../context/app-session-context';
+import "@fastify/session";
+import type { AppSessionContext } from "../context/app-session-context";
 
-declare module '@fastify/session' {
-  interface FastifySessionObject extends AppSessionContext { }
+declare module "@fastify/session" {
+	interface FastifySessionObject extends AppSessionContext {}
 }

@@ -1,31 +1,18 @@
-import {
-  listAppliedSchemaNames,
-  loadSchemaEntries,
-  seedsDirectory,
-} from './shared-config.mjs';
+import { Pool } from "pg";
+import { ensureDatabaseUrl } from "./shared-config.mjs";
 
-const historyNames = new Set(
-  await listAppliedSchemaNames('objx_seed_history'),
-);
-const schemas = await loadSchemaEntries(seedsDirectory, 'seed');
-const completed = schemas.filter((schema) => historyNames.has(schema.name));
-const pending = schemas.filter((schema) => !historyNames.has(schema.name));
-
-console.log('Completed seeds:');
-if (completed.length === 0) {
-  console.log('- none');
-} else {
-  completed.forEach((schema) => {
-    console.log(`- ${schema.name} (${schema.fileName})`);
-  });
-}
-
-console.log('');
-console.log('Pending seeds:');
-if (pending.length === 0) {
-  console.log('- none');
-} else {
-  pending.forEach((schema) => {
-    console.log(`- ${schema.name} (${schema.fileName})`);
-  });
+ensureDatabaseUrl();
+const pool = new Pool({ connectionString: ensureDatabaseUrl() });
+try {
+	const users = await pool
+		.query("select count(*) as count from users")
+		.catch(() => ({ rows: [{ count: "0" }] }));
+	const orgs = await pool
+		.query("select count(*) as count from organizations")
+		.catch(() => ({ rows: [{ count: "0" }] }));
+	console.log(
+		`users: ${users.rows[0]?.count ?? 0}, organizations: ${orgs.rows[0]?.count ?? 0}`,
+	);
+} finally {
+	await pool.end();
 }

@@ -1,4 +1,4 @@
-# 🚀 Quick Start - Auth + Users com Zod + Objx
+# 🚀 Quick Start - Auth + Users com Zod + Drizzle
 
 ## 📋 O que foi implementado
 
@@ -6,8 +6,8 @@
 ✅ Módulos organizados em arquitetura feature-first
 ✅ Padrão Use Cases aplicado
 ✅ Exemplo de login com validação Zod
-✅ Banco com `Objx`
-✅ CRUD de `users` com `use-cases + Objx`
+✅ Banco com `Drizzle ORM`
+✅ CRUD de `users` com `use-cases + Drizzle`
 ✅ Documentação completa
 
 ## 🎯 Estrutura Criada
@@ -43,7 +43,7 @@ src/
 
 ### 0. Personalizar o template
 ```bash
-npm run bootstrap
+pnpm bootstrap
 ```
 
 O bootstrap atualiza o nome do projeto e os metadados básicos usados no app e na documentação.
@@ -51,25 +51,27 @@ Ele também pergunta se Google Auth deve ser habilitado, se o envio de email fic
 
 ### 1. Rodar banco de dados
 ```bash
-npm run dev:dependencies
+pnpm dev:dependencies
 ```
 
 ### 2. Rodar migration
 ```bash
-npm run migrate:latest
+pnpm db:migrate
 ```
 
 ### 3. Popular com dados de teste
 ```bash
-npm run seed:run
+pnpm seed:run
 ```
 
 ### 4. Iniciar servidor
 ```bash
-npm run start:dev
+pnpm start:dev
 ```
 
-### 5. Testar endpoint de login
+### 5. Testar endpoints de autenticação (Better Auth)
+
+> **Migração Better Auth (placeholder):** `POST /api/auth/sign-up/email`, `POST /api/auth/sign-in/email`, `POST /api/auth/sign-out` e `POST /api/auth/sign-in/social?provider=google` agora são o fluxo principal (handler montado em `/api/auth/*`). `BETTER_AUTH_SECRET` (≥32 chars), `BETTER_AUTH_URL` e `GOOGLE_CLIENT_SECRET` foram adicionados ao `.env`/bootstrap. `POST /auth/login` e `POST /auth/register` legados ainda respondem como proxy para o Better Auth; `GET /auth/me` valida via `BetterAuthGuard`. Tabelas `auth.user`, `auth.session`, `auth.account`, `auth.verification` coexistem com `public.users`/`organizations` (lane de DB).
 
 Credenciais iniciais da seed:
 
@@ -236,25 +238,25 @@ export class LoginDto extends createZodDto(LoginSchema) {}
 
 ### Erro de compilação
 ```bash
-npm run build
+pnpm build
 ```
 
 ### Banco não conecta
 ```bash
 docker-compose down
-npm run dev:dependencies
+pnpm dev:dependencies
 ```
 
 ### Migration não roda
 ```bash
-npm run migrate:rollback
-npm run migrate:latest
+pnpm db:check
+pnpm drizzle-kit check
 ```
 
 ### Seed não roda
 ```bash
-npm run seed:status
-npm run seed:run
+pnpm seed:status
+pnpm seed:run
 ```
 
 ## 💡 Dicas

@@ -1,10 +1,10 @@
 export class Organization {
-  id: string;
-  name: string;
-  createdAt: Date;
-  updatedAt: Date;
+	id: string;
+	name: string;
+	createdAt: Date;
+	updatedAt: Date;
 
-  constructor(partial: Partial<Organization> = {}) {
-    Object.assign(this, partial);
-  }
+	constructor(partial: Partial<Organization> = {}) {
+		Object.assign(this, partial);
+	}
 }

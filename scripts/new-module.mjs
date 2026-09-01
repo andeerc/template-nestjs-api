@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-import fs from 'node:fs';
-import path from 'node:path';
-import process from 'node:process';
-import { fileURLToPath } from 'node:url';
+import fs from "node:fs";
+import path from "node:path";
+import process from "node:process";
+import { fileURLToPath } from "node:url";
 
 const HELP_TEXT = `Usage:
-  npm run new:module -- <module-name> [options]
+  pnpm new:module -- <module-name> [options]
 
 Arguments:
   <module-name>          Module folder/route name, preferably plural and kebab-case
@@ -19,291 +19,287 @@ Options:
   --help, -h             Show this help message
 
 Examples:
-  npm run new:module -- orders
-  npm run new:module -- product-categories --entity product-category
-  npm run new:module -- reports --dry-run
+  pnpm new:module -- orders
+  pnpm new:module -- product-categories --entity product-category
+  pnpm new:module -- reports --dry-run
 `;
 
 const projectRoot = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  '..',
+	path.dirname(fileURLToPath(import.meta.url)),
+	"..",
 );
 
 function fail(message) {
-  console.error(`Error: ${message}`);
-  process.exit(1);
+	console.error(`Error: ${message}`);
+	process.exit(1);
 }
 
 function capitalize(value) {
-  return value.charAt(0).toUpperCase() + value.slice(1);
+	return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 function splitWords(value) {
-  return value
-    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-    .split(/[^a-zA-Z0-9]+/)
-    .filter(Boolean)
-    .map((part) => part.toLowerCase());
+	return value
+		.replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+		.split(/[^a-zA-Z0-9]+/)
+		.filter(Boolean)
+		.map((part) => part.toLowerCase());
 }
 
 function toKebabCase(value) {
-  return splitWords(value).join('-');
+	return splitWords(value).join("-");
 }
 
 function toCamelCase(value) {
-  return splitWords(value)
-    .map((word, index) => (index === 0 ? word : capitalize(word)))
-    .join('');
+	return splitWords(value)
+		.map((word, index) => (index === 0 ? word : capitalize(word)))
+		.join("");
 }
 
 function toPascalCase(value) {
-  return splitWords(value)
-    .map(capitalize)
-    .join('');
+	return splitWords(value).map(capitalize).join("");
 }
 
 function toTitleCase(value) {
-  return splitWords(value)
-    .map(capitalize)
-    .join(' ');
+	return splitWords(value).map(capitalize).join(" ");
 }
 
 function toSentenceCase(value) {
-  return splitWords(value).join(' ');
+	return splitWords(value).join(" ");
 }
 
 function toConstantCase(value) {
-  return splitWords(value).join('_').toUpperCase();
+	return splitWords(value).join("_").toUpperCase();
 }
 
 function singularizeWord(word) {
-  if (word.endsWith('ies') && word.length > 3) {
-    return `${word.slice(0, -3)}y`;
-  }
+	if (word.endsWith("ies") && word.length > 3) {
+		return `${word.slice(0, -3)}y`;
+	}
 
-  if (/(sses|shes|ches|xes|zes)$/.test(word)) {
-    return word.slice(0, -2);
-  }
+	if (/(sses|shes|ches|xes|zes)$/.test(word)) {
+		return word.slice(0, -2);
+	}
 
-  if (word.endsWith('s') && !word.endsWith('ss')) {
-    return word.slice(0, -1);
-  }
+	if (word.endsWith("s") && !word.endsWith("ss")) {
+		return word.slice(0, -1);
+	}
 
-  return word;
+	return word;
 }
 
 function singularizeKebab(value) {
-  const words = value.split('-');
+	const words = value.split("-");
 
-  if (words.length === 0) {
-    return value;
-  }
+	if (words.length === 0) {
+		return value;
+	}
 
-  words[words.length - 1] = singularizeWord(words[words.length - 1]);
-  return words.join('-');
+	words[words.length - 1] = singularizeWord(words[words.length - 1]);
+	return words.join("-");
 }
 
 function parseCommaEntries(block) {
-  return block
-    .split(',')
-    .map((entry) => entry.trim())
-    .filter(Boolean);
+	return block
+		.split(",")
+		.map((entry) => entry.trim())
+		.filter(Boolean);
 }
 
 function appendImport(content, statement, groupRegex) {
-  if (content.includes(statement)) {
-    return {
-      changed: false,
-      content,
-    };
-  }
+	if (content.includes(statement)) {
+		return {
+			changed: false,
+			content,
+		};
+	}
 
-  const groupedMatches = [...content.matchAll(groupRegex)];
-  const allImports = [...content.matchAll(/^import .+;$/gm)];
-  const targetMatches = groupedMatches.length > 0 ? groupedMatches : allImports;
+	const groupedMatches = [...content.matchAll(groupRegex)];
+	const allImports = [...content.matchAll(/^import .+;$/gm)];
+	const targetMatches = groupedMatches.length > 0 ? groupedMatches : allImports;
 
-  if (targetMatches.length === 0) {
-    return {
-      changed: true,
-      content: `${statement}\n${content}`,
-    };
-  }
+	if (targetMatches.length === 0) {
+		return {
+			changed: true,
+			content: `${statement}\n${content}`,
+		};
+	}
 
-  const lastMatch = targetMatches[targetMatches.length - 1];
-  const insertionIndex = lastMatch.index + lastMatch[0].length;
+	const lastMatch = targetMatches[targetMatches.length - 1];
+	const insertionIndex = lastMatch.index + lastMatch[0].length;
 
-  return {
-    changed: true,
-    content: `${content.slice(0, insertionIndex)}\n${statement}${content.slice(insertionIndex)}`,
-  };
+	return {
+		changed: true,
+		content: `${content.slice(0, insertionIndex)}\n${statement}${content.slice(insertionIndex)}`,
+	};
 }
 
 function addArrayItem(content, propertyName, item) {
-  const regex = new RegExp(`${propertyName}:\\s*\\[([\\s\\S]*?)\\],`);
-  const match = content.match(regex);
+	const regex = new RegExp(`${propertyName}:\\s*\\[([\\s\\S]*?)\\],`);
+	const match = content.match(regex);
 
-  if (!match) {
-    throw new Error(`Could not find "${propertyName}" array.`);
-  }
+	if (!match) {
+		throw new Error(`Could not find "${propertyName}" array.`);
+	}
 
-  const entries = parseCommaEntries(match[1]);
+	const entries = parseCommaEntries(match[1]);
 
-  if (entries.includes(item)) {
-    return {
-      changed: false,
-      content,
-    };
-  }
+	if (entries.includes(item)) {
+		return {
+			changed: false,
+			content,
+		};
+	}
 
-  entries.push(item);
+	entries.push(item);
 
-  return {
-    changed: true,
-    content: content.replace(
-      regex,
-      `${propertyName}: [\n    ${entries.join(',\n    ')},\n  ],`,
-    ),
-  };
+	return {
+		changed: true,
+		content: content.replace(
+			regex,
+			`${propertyName}: [\n    ${entries.join(",\n    ")},\n  ],`,
+		),
+	};
 }
 
 function writeFile(targetPath, content) {
-  fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-  fs.writeFileSync(targetPath, content, 'utf8');
+	fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+	fs.writeFileSync(targetPath, content, "utf8");
 }
 
 function parseArgs(argv) {
-  const options = {
-    dryRun: false,
-    entityOverride: null,
-    force: false,
-    help: false,
-    register: true,
-  };
-  const positionals = [];
+	const options = {
+		dryRun: false,
+		entityOverride: null,
+		force: false,
+		help: false,
+		register: true,
+	};
+	const positionals = [];
 
-  for (let index = 0; index < argv.length; index += 1) {
-    const arg = argv[index];
+	for (let index = 0; index < argv.length; index += 1) {
+		const arg = argv[index];
 
-    if (arg === '--help' || arg === '-h') {
-      options.help = true;
-      continue;
-    }
+		if (arg === "--help" || arg === "-h") {
+			options.help = true;
+			continue;
+		}
 
-    if (arg === '--entity') {
-      const nextArg = argv[index + 1];
+		if (arg === "--entity") {
+			const nextArg = argv[index + 1];
 
-      if (!nextArg) {
-        fail('Missing value for --entity.');
-      }
+			if (!nextArg) {
+				fail("Missing value for --entity.");
+			}
 
-      options.entityOverride = nextArg;
-      index += 1;
-      continue;
-    }
+			options.entityOverride = nextArg;
+			index += 1;
+			continue;
+		}
 
-    if (arg === '--no-register') {
-      options.register = false;
-      continue;
-    }
+		if (arg === "--no-register") {
+			options.register = false;
+			continue;
+		}
 
-    if (arg === '--dry-run') {
-      options.dryRun = true;
-      continue;
-    }
+		if (arg === "--dry-run") {
+			options.dryRun = true;
+			continue;
+		}
 
-    if (arg === '--force') {
-      options.force = true;
-      continue;
-    }
+		if (arg === "--force") {
+			options.force = true;
+			continue;
+		}
 
-    if (arg.startsWith('--')) {
-      fail(`Unknown option: ${arg}`);
-    }
+		if (arg.startsWith("--")) {
+			fail(`Unknown option: ${arg}`);
+		}
 
-    positionals.push(arg);
-  }
+		positionals.push(arg);
+	}
 
-  if (!options.entityOverride && positionals[1]) {
-    options.entityOverride = positionals[1];
-  }
+	if (!options.entityOverride && positionals[1]) {
+		options.entityOverride = positionals[1];
+	}
 
-  if (positionals.length > 2) {
-    fail('Too many positional arguments.');
-  }
+	if (positionals.length > 2) {
+		fail("Too many positional arguments.");
+	}
 
-  return {
-    moduleInput: positionals[0],
-    ...options,
-  };
+	return {
+		moduleInput: positionals[0],
+		...options,
+	};
 }
 
 function createContext(moduleInput, entityOverride) {
-  if (!moduleInput) {
-    console.log(HELP_TEXT);
-    process.exit(1);
-  }
+	if (!moduleInput) {
+		console.log(HELP_TEXT);
+		process.exit(1);
+	}
 
-  if (/[\\/]/.test(moduleInput)) {
-    fail('Module name must be a single feature name without path separators.');
-  }
+	if (/[\\/]/.test(moduleInput)) {
+		fail("Module name must be a single feature name without path separators.");
+	}
 
-  if (entityOverride && /[\\/]/.test(entityOverride)) {
-    fail('Entity name must be a single name without path separators.');
-  }
+	if (entityOverride && /[\\/]/.test(entityOverride)) {
+		fail("Entity name must be a single name without path separators.");
+	}
 
-  const moduleName = toKebabCase(moduleInput);
-  const entityName = entityOverride
-    ? toKebabCase(entityOverride)
-    : singularizeKebab(moduleName);
+	const moduleName = toKebabCase(moduleInput);
+	const entityName = entityOverride
+		? toKebabCase(entityOverride)
+		: singularizeKebab(moduleName);
 
-  if (!moduleName || !entityName) {
-    fail('Module or entity name could not be normalized.');
-  }
+	if (!moduleName || !entityName) {
+		fail("Module or entity name could not be normalized.");
+	}
 
-  const moduleClass = toPascalCase(moduleName);
-  const entityClass = toPascalCase(entityName);
+	const moduleClass = toPascalCase(moduleName);
+	const entityClass = toPascalCase(entityName);
 
-  return {
-    createUseCaseClass: `Create${entityClass}UseCase`,
-    deleteUseCaseClass: `Delete${entityClass}UseCase`,
-    entityClass,
-    entityDisplayName: toTitleCase(entityName),
-    entityFileName: `${entityName}.entity.ts`,
-    entityName,
-    entitySentenceName: toSentenceCase(entityName),
-    findUseCaseClass: `Find${entityClass}UseCase`,
-    idParamDtoClass: `${entityClass}IdParamDto`,
-    idParamFileName: `${entityName}-id-param.dto.ts`,
-    listDtoClass: `FindAll${moduleClass}Dto`,
-    listDtoFileName: `find-all-${moduleName}.dto.ts`,
-    listUseCaseClass: `List${moduleClass}UseCase`,
-    moduleClass,
-    moduleDisplayName: toTitleCase(moduleName),
-    moduleFileName: `${moduleName}.module.ts`,
-    moduleImportPath: `@/modules/${moduleName}/${moduleName}.module`,
-    moduleName,
-    moduleSentenceName: toSentenceCase(moduleName),
-    modelClass: `${entityClass}Model`,
-    modelFileName: `${entityName}.model.ts`,
-    persistenceModuleClass: `${moduleClass}PersistenceModule`,
-    persistenceModuleFileName: `${moduleName}-persistence.module.ts`,
-    repositoryClass: `${entityClass}Repository`,
-    repositoryFileName: `${entityName}.repository.ts`,
-    repositoryInterfaceName: `I${entityClass}Repository`,
-    repositoryInterfaceFileName: `${entityName}.repository.interface.ts`,
-    repositoryToken: `${toConstantCase(entityName)}_REPOSITORY`,
-    responseDtoClass: `${entityClass}ResponseDto`,
-    responseFileName: `${entityName}-response.dto.ts`,
-    updateDtoClass: `Update${entityClass}Dto`,
-    updateDtoFileName: `update-${entityName}.dto.ts`,
-    updateUseCaseClass: `Update${entityClass}UseCase`,
-    createDtoClass: `Create${entityClass}Dto`,
-    createDtoFileName: `create-${entityName}.dto.ts`,
-  };
+	return {
+		createUseCaseClass: `Create${entityClass}UseCase`,
+		deleteUseCaseClass: `Delete${entityClass}UseCase`,
+		entityClass,
+		entityDisplayName: toTitleCase(entityName),
+		entityFileName: `${entityName}.entity.ts`,
+		entityName,
+		entitySentenceName: toSentenceCase(entityName),
+		findUseCaseClass: `Find${entityClass}UseCase`,
+		idParamDtoClass: `${entityClass}IdParamDto`,
+		idParamFileName: `${entityName}-id-param.dto.ts`,
+		listDtoClass: `FindAll${moduleClass}Dto`,
+		listDtoFileName: `find-all-${moduleName}.dto.ts`,
+		listUseCaseClass: `List${moduleClass}UseCase`,
+		moduleClass,
+		moduleDisplayName: toTitleCase(moduleName),
+		moduleFileName: `${moduleName}.module.ts`,
+		moduleImportPath: `@/modules/${moduleName}/${moduleName}.module`,
+		moduleName,
+		moduleSentenceName: toSentenceCase(moduleName),
+		modelClass: `${entityClass}Model`,
+		modelFileName: `${entityName}.model.ts`,
+		persistenceModuleClass: `${moduleClass}PersistenceModule`,
+		persistenceModuleFileName: `${moduleName}-persistence.module.ts`,
+		repositoryClass: `${entityClass}Repository`,
+		repositoryFileName: `${entityName}.repository.ts`,
+		repositoryInterfaceName: `I${entityClass}Repository`,
+		repositoryInterfaceFileName: `${entityName}.repository.interface.ts`,
+		repositoryToken: `${toConstantCase(entityName)}_REPOSITORY`,
+		responseDtoClass: `${entityClass}ResponseDto`,
+		responseFileName: `${entityName}-response.dto.ts`,
+		updateDtoClass: `Update${entityClass}Dto`,
+		updateDtoFileName: `update-${entityName}.dto.ts`,
+		updateUseCaseClass: `Update${entityClass}UseCase`,
+		createDtoClass: `Create${entityClass}Dto`,
+		createDtoFileName: `create-${entityName}.dto.ts`,
+	};
 }
 
 function createEntityTemplate(ctx) {
-  return `export class ${ctx.entityClass} {
+	return `export class ${ctx.entityClass} {
   id: string;
   name: string;
   createdAt: Date;
@@ -317,7 +313,7 @@ function createEntityTemplate(ctx) {
 }
 
 function createRepositoryInterfaceTemplate(ctx) {
-  return `import { ${ctx.entityClass} } from '../entities/${ctx.entityName}.entity';
+	return `import { ${ctx.entityClass} } from '../entities/${ctx.entityName}.entity';
 
 export interface Create${ctx.entityClass}Data {
   name: string;
@@ -352,8 +348,8 @@ export const ${ctx.repositoryToken} = Symbol('${ctx.repositoryInterfaceName}');
 }
 
 function createRepositoryTemplate(ctx) {
-  return `import { Inject, Injectable } from '@nestjs/common';
-import { expr } from '@qbobjx/core';
+	return `import { Inject, Injectable } from '@nestjs/common';
+import { and, count, eq } from 'drizzle-orm';
 import { ${ctx.entityClass} } from '@/modules/${ctx.moduleName}/domain/entities/${ctx.entityName}.entity';
 import {
   Create${ctx.entityClass}Data,
@@ -363,11 +359,11 @@ import {
   Update${ctx.entityClass}Data,
 } from '@/modules/${ctx.moduleName}/domain/repositories/${ctx.entityName}.repository.interface';
 import { generateSnowflakeId } from '@/shared/ids/snowflake-id.util';
-import { OBJX_SESSION } from '@/shared/infrastructure/database/database.tokens';
-import type { ObjxSession } from '@/shared/infrastructure/database/database.types';
-import { ${ctx.modelClass}, type ${ctx.entityClass}Record } from '../models/${ctx.entityName}.model';
+import { DRIZZLE } from '@/shared/infrastructure/database/database.tokens';
+import type { DrizzleDb } from '@/shared/infrastructure/database/database.types';
+import { ${ctx.entityName}Table } from '../models/${ctx.entityName}.model';
 
-function map${ctx.entityClass}(row: ${ctx.entityClass}Record): ${ctx.entityClass} {
+function map${ctx.entityClass}(row: typeof ${ctx.entityName}Table.$inferSelect): ${ctx.entityClass} {
   return new ${ctx.entityClass}({
     id: row.id,
     name: row.name,
@@ -378,145 +374,75 @@ function map${ctx.entityClass}(row: ${ctx.entityClass}Record): ${ctx.entityClass
 
 @Injectable()
 export class ${ctx.repositoryClass} implements ${ctx.repositoryInterfaceName} {
-  constructor(
-    @Inject(OBJX_SESSION)
-    private readonly objxSession: ObjxSession,
-  ) {}
+  constructor(@Inject(DRIZZLE) private readonly db: DrizzleDb) {}
 
   async findById(id: string): Promise<${ctx.entityClass} | null> {
-    const rows = await this.objxSession.execute(
-      ${ctx.modelClass}
-        .query()
-        .where(({ id: entityId }, op) => op.eq(entityId, id))
-        .limit(1),
-    );
-    const row = rows[0];
-
+    const [row] = await this.db.select().from(${ctx.entityName}Table).where(eq(${ctx.entityName}Table.id, id)).limit(1);
     return row ? map${ctx.entityClass}(row) : null;
   }
 
   async findAll(filters: FindAll${ctx.moduleClass}Filters): Promise<FindAll${ctx.moduleClass}Result> {
-    let countQuery = ${ctx.modelClass}.query();
-    let rowsQuery = ${ctx.modelClass}
-      .query()
-      .orderBy(({ createdAt }) => createdAt, 'desc');
+    const conditions = [];
+    if (filters.id) conditions.push(eq(${ctx.entityName}Table.id, filters.id));
+    if (filters.name) conditions.push(eq(${ctx.entityName}Table.name, filters.name));
+    const where = conditions.length ? and(...conditions) : undefined;
 
-    if (filters.id) {
-      countQuery = countQuery.where(({ id }, op) => op.eq(id, filters.id));
-      rowsQuery = rowsQuery.where(({ id }, op) => op.eq(id, filters.id));
-    }
+    const [countRow] = await this.db.select({ total: count() }).from(${ctx.entityName}Table).where(where);
+    const total = Number(countRow?.total ?? 0);
 
-    if (filters.name) {
-      countQuery = countQuery.where(({ name }, op) => op.eq(name, filters.name));
-      rowsQuery = rowsQuery.where(({ name }, op) => op.eq(name, filters.name));
-    }
-
-    rowsQuery = rowsQuery
+    const rows = await this.db
+      .select()
+      .from(${ctx.entityName}Table)
+      .where(where)
+      .orderBy(${ctx.entityName}Table.createdAt)
       .offset((filters.pageCount - 1) * filters.recordsPerPage)
       .limit(filters.recordsPerPage);
 
-    const [countRows, rows] = await Promise.all([
-      this.objxSession.execute(
-        countQuery.selectExpr('total', ({ id }) => expr.count<number>(id)),
-      ),
-      this.objxSession.execute(rowsQuery),
-    ]);
-    const total = Number(countRows[0]?.total ?? 0);
-
-    return {
-      data: rows.map(map${ctx.entityClass}),
-      total,
-    };
+    return { data: rows.map(map${ctx.entityClass}), total };
   }
 
   async create(data: Create${ctx.entityClass}Data): Promise<${ctx.entityClass}> {
-    const rows = await this.objxSession.execute(
-      ${ctx.modelClass}
-        .insert({
-          id: generateSnowflakeId(),
-          name: data.name,
-        })
-        .returning(({ id, name, createdAt, updatedAt }) => [
-          id,
-          name,
-          createdAt,
-          updatedAt,
-        ]),
-    );
-    const row = rows[0];
-
-    if (!row) {
-      throw new Error('${ctx.entityClass} insert did not return a row.');
-    }
-
+    const [row] = await this.db
+      .insert(${ctx.entityName}Table)
+      .values({ id: generateSnowflakeId(), name: data.name })
+      .returning();
+    if (!row) throw new Error('${ctx.entityClass} insert did not return a row.');
     return map${ctx.entityClass}(row);
   }
 
   async update(id: string, data: Update${ctx.entityClass}Data): Promise<${ctx.entityClass} | null> {
-    const updatePayload: Partial<${ctx.entityClass}Record> = {};
-
-    if (data.name !== undefined) {
-      updatePayload.name = data.name;
-    }
-
-    if (Object.keys(updatePayload).length === 0) {
-      return this.findById(id);
-    }
-
-    updatePayload.updatedAt = new Date();
-
-    const rows = await this.objxSession.execute(
-      ${ctx.modelClass}
-        .update(updatePayload)
-        .where(({ id: entityId }, op) => op.eq(entityId, id))
-        .returning(({ id, name, createdAt, updatedAt }) => [
-          id,
-          name,
-          createdAt,
-          updatedAt,
-        ]),
-    );
-    const row = rows[0];
-
+    const updatePayload: Partial<typeof ${ctx.entityName}Table.$inferInsert> = {};
+    if (data.name !== undefined) updatePayload.name = data.name;
+    if (Object.keys(updatePayload).length === 0) return this.findById(id);
+    (updatePayload as Record<string, unknown>).updatedAt = new Date();
+    const [row] = await this.db.update(${ctx.entityName}Table).set(updatePayload).where(eq(${ctx.entityName}Table.id, id)).returning();
     return row ? map${ctx.entityClass}(row) : null;
   }
 
   async delete(id: string): Promise<boolean> {
-    const deletedRows = await this.objxSession.execute(
-      ${ctx.modelClass}
-        .delete()
-        .where(({ id: entityId }, op) => op.eq(entityId, id)),
-    );
-
-    return deletedRows > 0;
+    const deleted = await this.db.delete(${ctx.entityName}Table).where(eq(${ctx.entityName}Table.id, id)).returning();
+    return deleted.length > 0;
   }
 }
 `;
 }
 
 function createModelTemplate(ctx) {
-  return `import { col, defineModel, type InferModelShape } from '@qbobjx/core';
-import { createSnakeCaseNamingPlugin } from '@qbobjx/plugins';
-import { snowflakeIdColumn } from '@/shared/infrastructure/database/objx-columns';
+	return `import { pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core';
 
-export const ${ctx.modelClass} = defineModel({
-  name: '${ctx.entityClass}',
-  table: '${ctx.moduleName}',
-  columns: {
-    id: snowflakeIdColumn().primary(),
-    name: col.text(),
-    createdAt: col.timestamp().generated(),
-    updatedAt: col.timestamp().generated(),
-  },
-  plugins: [createSnakeCaseNamingPlugin()],
+export const ${ctx.entityName}Table = pgTable('${ctx.moduleName}', {
+  id: varchar('id', { length: 24 }).primaryKey(),
+  name: text('name').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-export type ${ctx.entityClass}Record = InferModelShape<typeof ${ctx.modelClass}>;
+export type ${ctx.entityClass}Record = typeof ${ctx.entityName}Table.$inferSelect;
 `;
 }
 
 function createPersistenceModuleTemplate(ctx) {
-  return `import { Module } from '@nestjs/common';
+	return `import { Module } from '@nestjs/common';
 import { ${ctx.repositoryToken} } from '@/modules/${ctx.moduleName}/domain/repositories/${ctx.entityName}.repository.interface';
 import { ${ctx.repositoryClass} } from './repositories/${ctx.entityName}.repository';
 
@@ -534,7 +460,7 @@ export class ${ctx.persistenceModuleClass} {}
 }
 
 function createCreateUseCaseTemplate(ctx) {
-  return `import { Inject, Injectable } from '@nestjs/common';
+	return `import { Inject, Injectable } from '@nestjs/common';
 import type {
   Create${ctx.entityClass}Data,
   ${ctx.repositoryInterfaceName},
@@ -563,7 +489,7 @@ export class ${ctx.createUseCaseClass} {
 }
 
 function createFindUseCaseTemplate(ctx) {
-  return `import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+	return `import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { ${ctx.repositoryInterfaceName} } from '@/modules/${ctx.moduleName}/domain/repositories/${ctx.entityName}.repository.interface';
 import { ${ctx.repositoryToken} } from '@/modules/${ctx.moduleName}/domain/repositories/${ctx.entityName}.repository.interface';
 
@@ -591,7 +517,7 @@ export class ${ctx.findUseCaseClass} {
 }
 
 function createListUseCaseTemplate(ctx) {
-  return `import { Inject, Injectable } from '@nestjs/common';
+	return `import { Inject, Injectable } from '@nestjs/common';
 import type {
   FindAll${ctx.moduleClass}Filters,
   ${ctx.repositoryInterfaceName},
@@ -623,7 +549,7 @@ export class ${ctx.listUseCaseClass} {
 }
 
 function createUpdateUseCaseTemplate(ctx) {
-  return `import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+	return `import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type {
   ${ctx.repositoryInterfaceName},
   Update${ctx.entityClass}Data,
@@ -656,7 +582,7 @@ export class ${ctx.updateUseCaseClass} {
 }
 
 function createDeleteUseCaseTemplate(ctx) {
-  return `import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+	return `import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { ${ctx.repositoryInterfaceName} } from '@/modules/${ctx.moduleName}/domain/repositories/${ctx.entityName}.repository.interface';
 import { ${ctx.repositoryToken} } from '@/modules/${ctx.moduleName}/domain/repositories/${ctx.entityName}.repository.interface';
 
@@ -683,7 +609,7 @@ export class ${ctx.deleteUseCaseClass} {
 }
 
 function createCreateDtoTemplate(ctx) {
-  return `import { createZodDto } from 'nestjs-zod';
+	return `import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
 export const ${ctx.entityClass}NameSchema = z
@@ -703,7 +629,7 @@ export class ${ctx.createDtoClass} extends createZodDto(Create${ctx.entityClass}
 }
 
 function createUpdateDtoTemplate(ctx) {
-  return `import { createZodDto } from 'nestjs-zod';
+	return `import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { ${ctx.entityClass}NameSchema } from './create-${ctx.entityName}.dto';
 
@@ -723,7 +649,7 @@ export class ${ctx.updateDtoClass} extends createZodDto(Update${ctx.entityClass}
 }
 
 function createFindAllDtoTemplate(ctx) {
-  return `import { createZodDto } from 'nestjs-zod';
+	return `import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { snowflakeIdSchema } from '@/shared/ids/snowflake-id.schema';
 
@@ -753,7 +679,7 @@ export class ${ctx.listDtoClass} extends createZodDto(FindAll${ctx.moduleClass}S
 }
 
 function createIdParamDtoTemplate(ctx) {
-  return `import { createZodDto } from 'nestjs-zod';
+	return `import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { snowflakeIdSchema } from '@/shared/ids/snowflake-id.schema';
 
@@ -766,7 +692,7 @@ export class ${ctx.idParamDtoClass} extends createZodDto(${ctx.idParamDtoClass}S
 }
 
 function createResponseDtoTemplate(ctx) {
-  return `import { createZodDto } from 'nestjs-zod';
+	return `import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { snowflakeIdSchema } from '@/shared/ids/snowflake-id.schema';
 
@@ -784,16 +710,16 @@ export class ${ctx.responseDtoClass} extends createZodDto(${ctx.entityClass}Resp
 }
 
 function createDtoIndexTemplate(ctx) {
-  return `export * from './${ctx.createDtoFileName.replace('.ts', '')}';
-export * from './${ctx.listDtoFileName.replace('.ts', '')}';
-export * from './${ctx.idParamFileName.replace('.ts', '')}';
-export * from './${ctx.responseFileName.replace('.ts', '')}';
-export * from './${ctx.updateDtoFileName.replace('.ts', '')}';
+	return `export * from './${ctx.createDtoFileName.replace(".ts", "")}';
+export * from './${ctx.listDtoFileName.replace(".ts", "")}';
+export * from './${ctx.idParamFileName.replace(".ts", "")}';
+export * from './${ctx.responseFileName.replace(".ts", "")}';
+export * from './${ctx.updateDtoFileName.replace(".ts", "")}';
 `;
 }
 
 function createControllerTemplate(ctx) {
-  return `import {
+	return `import {
   Body,
   Controller,
   Delete,
@@ -927,13 +853,13 @@ export class ${ctx.moduleClass}Controller {
 }
 
 function createModuleTemplate(ctx) {
-  return `import { Module } from '@nestjs/common';
+	return `import { Module } from '@nestjs/common';
 import { ${ctx.createUseCaseClass} } from './application/use-cases/create-${ctx.entityName}.use-case';
 import { ${ctx.deleteUseCaseClass} } from './application/use-cases/delete-${ctx.entityName}.use-case';
 import { ${ctx.findUseCaseClass} } from './application/use-cases/find-${ctx.entityName}.use-case';
 import { ${ctx.listUseCaseClass} } from './application/use-cases/list-${ctx.moduleName}.use-case';
 import { ${ctx.updateUseCaseClass} } from './application/use-cases/update-${ctx.entityName}.use-case';
-import { ${ctx.persistenceModuleClass} } from './infrastructure/persistence/${ctx.persistenceModuleFileName.replace('.ts', '')}';
+import { ${ctx.persistenceModuleClass} } from './infrastructure/persistence/${ctx.persistenceModuleFileName.replace(".ts", "")}';
 import { ${ctx.moduleClass}Controller } from './presentation/http/controllers/${ctx.moduleName}.controller';
 
 @Module({
@@ -952,266 +878,262 @@ export class ${ctx.moduleClass}Module {}
 }
 
 function buildFilePlan(ctx) {
-  const moduleDir = path.join(projectRoot, 'src', 'modules', ctx.moduleName);
+	const moduleDir = path.join(projectRoot, "src", "modules", ctx.moduleName);
 
-  return [
-    {
-      path: path.join(moduleDir, ctx.moduleFileName),
-      content: createModuleTemplate(ctx),
-    },
-    {
-      path: path.join(
-        moduleDir,
-        'application',
-        'use-cases',
-        `create-${ctx.entityName}.use-case.ts`,
-      ),
-      content: createCreateUseCaseTemplate(ctx),
-    },
-    {
-      path: path.join(
-        moduleDir,
-        'application',
-        'use-cases',
-        `find-${ctx.entityName}.use-case.ts`,
-      ),
-      content: createFindUseCaseTemplate(ctx),
-    },
-    {
-      path: path.join(
-        moduleDir,
-        'application',
-        'use-cases',
-        `list-${ctx.moduleName}.use-case.ts`,
-      ),
-      content: createListUseCaseTemplate(ctx),
-    },
-    {
-      path: path.join(
-        moduleDir,
-        'application',
-        'use-cases',
-        `update-${ctx.entityName}.use-case.ts`,
-      ),
-      content: createUpdateUseCaseTemplate(ctx),
-    },
-    {
-      path: path.join(
-        moduleDir,
-        'application',
-        'use-cases',
-        `delete-${ctx.entityName}.use-case.ts`,
-      ),
-      content: createDeleteUseCaseTemplate(ctx),
-    },
-    {
-      path: path.join(moduleDir, 'domain', 'entities', ctx.entityFileName),
-      content: createEntityTemplate(ctx),
-    },
-    {
-      path: path.join(
-        moduleDir,
-        'domain',
-        'repositories',
-        ctx.repositoryInterfaceFileName,
-      ),
-      content: createRepositoryInterfaceTemplate(ctx),
-    },
-    {
-      path: path.join(
-        moduleDir,
-        'infrastructure',
-        'persistence',
-        'models',
-        ctx.modelFileName,
-      ),
-      content: createModelTemplate(ctx),
-    },
-    {
-      path: path.join(
-        moduleDir,
-        'infrastructure',
-        'persistence',
-        ctx.persistenceModuleFileName,
-      ),
-      content: createPersistenceModuleTemplate(ctx),
-    },
-    {
-      path: path.join(
-        moduleDir,
-        'infrastructure',
-        'persistence',
-        'repositories',
-        ctx.repositoryFileName,
-      ),
-      content: createRepositoryTemplate(ctx),
-    },
-    {
-      path: path.join(
-        moduleDir,
-        'presentation',
-        'http',
-        'controllers',
-        `${ctx.moduleName}.controller.ts`,
-      ),
-      content: createControllerTemplate(ctx),
-    },
-    {
-      path: path.join(
-        moduleDir,
-        'presentation',
-        'http',
-        'dtos',
-        ctx.createDtoFileName,
-      ),
-      content: createCreateDtoTemplate(ctx),
-    },
-    {
-      path: path.join(
-        moduleDir,
-        'presentation',
-        'http',
-        'dtos',
-        ctx.updateDtoFileName,
-      ),
-      content: createUpdateDtoTemplate(ctx),
-    },
-    {
-      path: path.join(
-        moduleDir,
-        'presentation',
-        'http',
-        'dtos',
-        ctx.listDtoFileName,
-      ),
-      content: createFindAllDtoTemplate(ctx),
-    },
-    {
-      path: path.join(
-        moduleDir,
-        'presentation',
-        'http',
-        'dtos',
-        ctx.idParamFileName,
-      ),
-      content: createIdParamDtoTemplate(ctx),
-    },
-    {
-      path: path.join(
-        moduleDir,
-        'presentation',
-        'http',
-        'dtos',
-        ctx.responseFileName,
-      ),
-      content: createResponseDtoTemplate(ctx),
-    },
-    {
-      path: path.join(
-        moduleDir,
-        'presentation',
-        'http',
-        'dtos',
-        'index.ts',
-      ),
-      content: createDtoIndexTemplate(ctx),
-    },
-  ];
+	return [
+		{
+			path: path.join(moduleDir, ctx.moduleFileName),
+			content: createModuleTemplate(ctx),
+		},
+		{
+			path: path.join(
+				moduleDir,
+				"application",
+				"use-cases",
+				`create-${ctx.entityName}.use-case.ts`,
+			),
+			content: createCreateUseCaseTemplate(ctx),
+		},
+		{
+			path: path.join(
+				moduleDir,
+				"application",
+				"use-cases",
+				`find-${ctx.entityName}.use-case.ts`,
+			),
+			content: createFindUseCaseTemplate(ctx),
+		},
+		{
+			path: path.join(
+				moduleDir,
+				"application",
+				"use-cases",
+				`list-${ctx.moduleName}.use-case.ts`,
+			),
+			content: createListUseCaseTemplate(ctx),
+		},
+		{
+			path: path.join(
+				moduleDir,
+				"application",
+				"use-cases",
+				`update-${ctx.entityName}.use-case.ts`,
+			),
+			content: createUpdateUseCaseTemplate(ctx),
+		},
+		{
+			path: path.join(
+				moduleDir,
+				"application",
+				"use-cases",
+				`delete-${ctx.entityName}.use-case.ts`,
+			),
+			content: createDeleteUseCaseTemplate(ctx),
+		},
+		{
+			path: path.join(moduleDir, "domain", "entities", ctx.entityFileName),
+			content: createEntityTemplate(ctx),
+		},
+		{
+			path: path.join(
+				moduleDir,
+				"domain",
+				"repositories",
+				ctx.repositoryInterfaceFileName,
+			),
+			content: createRepositoryInterfaceTemplate(ctx),
+		},
+		{
+			path: path.join(
+				moduleDir,
+				"infrastructure",
+				"persistence",
+				"models",
+				ctx.modelFileName,
+			),
+			content: createModelTemplate(ctx),
+		},
+		{
+			path: path.join(
+				moduleDir,
+				"infrastructure",
+				"persistence",
+				ctx.persistenceModuleFileName,
+			),
+			content: createPersistenceModuleTemplate(ctx),
+		},
+		{
+			path: path.join(
+				moduleDir,
+				"infrastructure",
+				"persistence",
+				"repositories",
+				ctx.repositoryFileName,
+			),
+			content: createRepositoryTemplate(ctx),
+		},
+		{
+			path: path.join(
+				moduleDir,
+				"presentation",
+				"http",
+				"controllers",
+				`${ctx.moduleName}.controller.ts`,
+			),
+			content: createControllerTemplate(ctx),
+		},
+		{
+			path: path.join(
+				moduleDir,
+				"presentation",
+				"http",
+				"dtos",
+				ctx.createDtoFileName,
+			),
+			content: createCreateDtoTemplate(ctx),
+		},
+		{
+			path: path.join(
+				moduleDir,
+				"presentation",
+				"http",
+				"dtos",
+				ctx.updateDtoFileName,
+			),
+			content: createUpdateDtoTemplate(ctx),
+		},
+		{
+			path: path.join(
+				moduleDir,
+				"presentation",
+				"http",
+				"dtos",
+				ctx.listDtoFileName,
+			),
+			content: createFindAllDtoTemplate(ctx),
+		},
+		{
+			path: path.join(
+				moduleDir,
+				"presentation",
+				"http",
+				"dtos",
+				ctx.idParamFileName,
+			),
+			content: createIdParamDtoTemplate(ctx),
+		},
+		{
+			path: path.join(
+				moduleDir,
+				"presentation",
+				"http",
+				"dtos",
+				ctx.responseFileName,
+			),
+			content: createResponseDtoTemplate(ctx),
+		},
+		{
+			path: path.join(moduleDir, "presentation", "http", "dtos", "index.ts"),
+			content: createDtoIndexTemplate(ctx),
+		},
+	];
 }
 
 function planRegistrations(ctx, shouldRegister) {
-  if (!shouldRegister) {
-    return [];
-  }
+	if (!shouldRegister) {
+		return [];
+	}
 
-  const appModulePath = path.join(projectRoot, 'src', 'app.module.ts');
+	const appModulePath = path.join(projectRoot, "src", "app.module.ts");
 
-  if (!fs.existsSync(appModulePath)) {
-    return [];
-  }
+	if (!fs.existsSync(appModulePath)) {
+		return [];
+	}
 
-  const currentContent = fs.readFileSync(appModulePath, 'utf8');
-  const importStatement = `import { ${ctx.moduleClass}Module } from '${ctx.moduleImportPath}';`;
-  const withImport = appendImport(
-    currentContent,
-    importStatement,
-    /^import .+ from '@\/modules\/.+';$/gm,
-  );
-  const withRegistration = addArrayItem(
-    withImport.content,
-    'imports',
-    `${ctx.moduleClass}Module`,
-  );
+	const currentContent = fs.readFileSync(appModulePath, "utf8");
+	const importStatement = `import { ${ctx.moduleClass}Module } from '${ctx.moduleImportPath}';`;
+	const withImport = appendImport(
+		currentContent,
+		importStatement,
+		/^import .+ from '@\/modules\/.+';$/gm,
+	);
+	const withRegistration = addArrayItem(
+		withImport.content,
+		"imports",
+		`${ctx.moduleClass}Module`,
+	);
 
-  return [
-    {
-      changed: withImport.changed || withRegistration.changed,
-      content: withRegistration.content,
-      path: appModulePath,
-    },
-  ];
+	return [
+		{
+			changed: withImport.changed || withRegistration.changed,
+			content: withRegistration.content,
+			path: appModulePath,
+		},
+	];
 }
 
 function formatRelativePath(targetPath) {
-  return path.relative(projectRoot, targetPath).replaceAll('\\', '/');
+	return path.relative(projectRoot, targetPath).replaceAll("\\", "/");
 }
 
 function main() {
-  const options = parseArgs(process.argv.slice(2));
+	const options = parseArgs(process.argv.slice(2));
 
-  if (options.help) {
-    console.log(HELP_TEXT);
-    return;
-  }
+	if (options.help) {
+		console.log(HELP_TEXT);
+		return;
+	}
 
-  const ctx = createContext(options.moduleInput, options.entityOverride);
-  const files = buildFilePlan(ctx);
-  const registrationUpdates = planRegistrations(ctx, options.register);
-  const existingFiles = files.filter((file) => fs.existsSync(file.path));
+	const ctx = createContext(options.moduleInput, options.entityOverride);
+	const files = buildFilePlan(ctx);
+	const registrationUpdates = planRegistrations(ctx, options.register);
+	const existingFiles = files.filter((file) => fs.existsSync(file.path));
 
-  if (existingFiles.length > 0 && !options.force) {
-    console.error('The following files already exist:');
-    existingFiles.forEach((file) => {
-      console.error(`- ${formatRelativePath(file.path)}`);
-    });
-    fail('Use --force to overwrite the generated files.');
-  }
+	if (existingFiles.length > 0 && !options.force) {
+		console.error("The following files already exist:");
+		existingFiles.forEach((file) => {
+			console.error(`- ${formatRelativePath(file.path)}`);
+		});
+		fail("Use --force to overwrite the generated files.");
+	}
 
-  if (options.dryRun) {
-    console.log(`Module preview for "${ctx.moduleName}":`);
-    files.forEach((file) => {
-      const action = fs.existsSync(file.path) ? 'overwrite' : 'create';
-      console.log(`- Would ${action} ${formatRelativePath(file.path)}`);
-    });
-    registrationUpdates.forEach((update) => {
-      if (update.changed) {
-        console.log(`- Would update ${formatRelativePath(update.path)}`);
-      }
-    });
-    console.log('');
-    console.log('Notes:');
-    console.log('- Generated module follows the Zod + Objx pattern used by the project');
-    console.log('- Generated entity starts with a default "name" field');
-    console.log('- Create a migration after adjusting the entity fields');
-    return;
-  }
+	if (options.dryRun) {
+		console.log(`Module preview for "${ctx.moduleName}":`);
+		files.forEach((file) => {
+			const action = fs.existsSync(file.path) ? "overwrite" : "create";
+			console.log(`- Would ${action} ${formatRelativePath(file.path)}`);
+		});
+		registrationUpdates.forEach((update) => {
+			if (update.changed) {
+				console.log(`- Would update ${formatRelativePath(update.path)}`);
+			}
+		});
+		console.log("");
+		console.log("Notes:");
+		console.log(
+			"- Generated module follows the Zod + Drizzle pattern used by the project",
+		);
+		console.log('- Generated entity starts with a default "name" field');
+		console.log("- Create a migration after adjusting the entity fields");
+		return;
+	}
 
-  files.forEach((file) => {
-    writeFile(file.path, file.content);
-  });
+	files.forEach((file) => {
+		writeFile(file.path, file.content);
+	});
 
-  registrationUpdates.forEach((update) => {
-    if (update.changed) {
-      writeFile(update.path, update.content);
-    }
-  });
+	registrationUpdates.forEach((update) => {
+		if (update.changed) {
+			writeFile(update.path, update.content);
+		}
+	});
 
-  console.log(`New module created at src/modules/${ctx.moduleName}`);
+	console.log(`New module created at src/modules/${ctx.moduleName}`);
 }
 
 try {
-  main();
+	main();
 } catch (error) {
-  const message = error instanceof Error ? error.message : 'Unexpected error';
-  fail(message);
+	const message = error instanceof Error ? error.message : "Unexpected error";
+	fail(message);
 }

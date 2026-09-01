@@ -46,6 +46,12 @@ lerna-debug.log*
 # temp directory
 .temp
 .tmp
+.tmp-objx-db
+
+# Objx legacy backups (reference only, do not commit)
+src/shared/infrastructure/database/migrations/_objx_backup/
+src/shared/infrastructure/database/seeds/_objx_backup/
+
 
 # Runtime data
 pids

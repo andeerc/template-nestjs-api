@@ -1,9 +1,7 @@
-import { createDatabaseUrl, runCodegenCli, seedsDirectory } from './shared-config.mjs';
-
-runCodegenCli([
-  'seed',
-  '--dialect', 'postgres',
-  '--database', createDatabaseUrl(),
-  '--dir', seedsDirectory,
-  '--direction', 'revert',
-]);
+console.log(
+	"Drizzle seed rollback: run npx tsx src/shared/infrastructure/database/seeds/run-seed-rollback.ts or manually revert via SQL",
+);
+console.log(
+	"Archived seeds in src/shared/infrastructure/database/seeds/_objx_backup",
+);
+process.exit(0);
